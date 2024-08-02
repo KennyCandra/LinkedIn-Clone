@@ -1,13 +1,22 @@
 import styled from "styled-components";
-import { signInAPI } from "../../Redux/actions";
+import { checkLocalStorage, getArticlesApi, signInAPI } from "../Redux/actions";
 import { connect } from "react-redux";
 import {  useNavigate } from "react-router-dom";
-
+import { useEffect } from "react";
 function LoginPage(props) {
+
+  useEffect(() => {
+    props.checkUser();
+  }, []);
+
+  useEffect(() => {
+    props.getArticles();
+  }, []);
 
   const navigate = useNavigate();
   return (
     <Container>
+      <button onClick={() => console.log(props.articles[0].comments)}>Articles</button>
       {props.user && navigate("/home")}
       <Nav>
         <a href="/index.html">
@@ -177,13 +186,18 @@ const Google = styled.button`
 const mapStateToProps = (state) => {
   return {
     user: state.userState.user,
+    articles : state.articleState.articles
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    signIn: ()=> dispatch(signInAPI())
+    signIn: ()=> dispatch(signInAPI()),
+    getArticles: () => dispatch(getArticlesApi()),
+    checkUser : () => dispatch(checkLocalStorage()),
   }
 } 
 
-export default connect(mapStateToProps , mapDispatchToProps)(LoginPage);
+ const connectedApp = connect(mapStateToProps , mapDispatchToProps)(LoginPage);
+
+export default connectedApp

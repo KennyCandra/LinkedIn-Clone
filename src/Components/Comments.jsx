@@ -1,0 +1,171 @@
+import styled from "styled-components";
+import { connect } from "react-redux";
+import { addCommentAPI , editCommentAPI, removeCommentAPI } from "../Redux/actions";
+import { useState } from "react";
+
+function Comments(props) {
+  const [comment, setComment] = useState("");
+  let commented = 'Oh I am Changed'
+
+  const handleAddComment = () => {
+    if (!comment) return;
+    const payload = {
+      description: comment,
+      Image: props.user.photoURL,
+      name: props.user.displayName,
+      articleId: props.article.id,
+      id : Math.random().toString(36).slice(2),
+      likes : [],
+    };
+    props.addComment(payload);
+  };
+
+  const handleClick = (e) => {
+    e.preventDefault();
+    handleAddComment();
+    setComment("");
+  };
+
+  const handleChange = (e) => {
+    setComment(e.target.value);
+  };
+
+  return (
+    <>
+      <Container>
+        <AddComment>
+          <UserImage>
+            <img src={props.user.photoURL} alt="" />
+          </UserImage>
+          <input
+            type="text"
+            placeholder="Add a comment"
+            value={comment}
+            onChange={handleChange}
+          />
+          <button
+            type="submit"
+            onClick={handleClick}
+            style={{
+              position: "absolute",
+              right: "1rem",
+              top: "0.8rem",
+              border: "none",
+              background: "transparent",
+              color: "#958b7b",
+              cursor: "pointer",
+            }}
+          >
+            Comment
+          </button>
+        </AddComment>
+        {props.article.comments.length > 0 &&  props.article.comments.map((comment) => (
+          <Content>
+            {props.user.displayName === comment.name && (
+              <button
+                onClick={() => props.removeComment(props.article , comment.id)}
+                style={{
+                  position: "absolute",
+                  right: "1rem",
+                  top: "0.8rem",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                <img
+                  src="images/close-icon.svg"
+                  style={{ width: "20px", height: "20px" }}
+                  alt=""
+                />
+              </button>
+            )}
+            <UserImage>
+              <img src={comment.Image} alt="" />
+            </UserImage>
+            <CommentInfo>
+              <UserName>
+                <h2>{comment.name}</h2>
+              </UserName>
+              <CommentDescription>
+                <p>{comment.description}</p>
+              </CommentDescription>
+              <Interactions>
+                <button>like</button>
+                <button>reply</button>
+              </Interactions>
+            </CommentInfo>
+            <button onClick={() => props.editComment(props.article , comment.id , commented)}>Edit Comment</button>
+          </Content>
+        ))}
+      </Container>
+    </>
+  );
+}
+
+const Container = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  flex-direction: column;
+`;
+
+const Content = styled.div`
+  display: flex;
+  gap: 1rem;
+  position: relative;
+`;
+
+const AddComment = styled.div`
+  display: flex;
+  position: relative;
+  gap: 1rem;
+  input {
+    width: 100%;
+    height: 1.5rem;
+    border-radius: 25px;
+    outline: none;
+    padding: 0.5rem;
+    padding-right: 100px;
+  }
+`;
+
+const CommentInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+`;
+const UserImage = styled.div`
+  img {
+    margin-inline: 20px 1px;
+    width: 48px;
+    border-radius: 50%;
+  }
+`;
+const UserName = styled.div``;
+const CommentDescription = styled.div`
+  margin-block: 1rem;
+`;
+const Interactions = styled.div`
+  display: flex;
+  gap: 1rem;
+  button {
+    background-color: transparent;
+    border: none;
+    color: #8e8e8e;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+`;
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    addComment: (payload) => dispatch(addCommentAPI(payload)),
+    removeComment : (payload , commentId) => dispatch(removeCommentAPI(payload , commentId)),
+    editComment : (payload , commentId , newComment)  => dispatch(editCommentAPI(payload , commentId , newComment)),
+  };
+};
+
+const connectedApp = connect(null, mapDispatchToProps)(Comments);
+
+export default connectedApp;
