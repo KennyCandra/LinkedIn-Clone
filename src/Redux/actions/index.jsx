@@ -276,7 +276,16 @@ export const addLike = (article , payload) => {
             type : payload.type,
           }),
         });
-      } else {
+      } else if (findLike !== undefined && findLike.type !== payload.type) {
+        await updateDoc(docToUpdate.ref, {
+          likes: arrayRemove({ ...findLike }),
+        })
+        await updateDoc(docToUpdate.ref, {
+          likes: arrayUnion({
+            ...findLike, type:payload.type
+          }),
+        });
+      } else if (findLike !== undefined && findLike.type === payload.type) {
         await updateDoc(docToUpdate.ref, {
           likes: arrayRemove({ ...findLike }),
         })

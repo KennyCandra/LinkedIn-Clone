@@ -10,21 +10,18 @@ import {
 } from "../Redux/actions";
 import ReactPlayer from "react-player";
 import Comments from "./Comments";
-import EditPostModal from "./EditPostModal";
-import { Timestamp } from "firebase/firestore";
-import LikeTypes from "./LikeTypes";
 import LikeButton from "./LikeButton";
+import EditModal from "./EditModal";
 
 function Main(props) {
   const [show, setShow] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editArticle, setEditArticle] = useState("");
-  const [likeType, setLikeType] = useState("like");
-  // const [displayLike, setDisplayLike] = useState("none");
 
   const handleClick = () => {
     setShow(!show);
   };
+
+  
 
   useEffect(() => {
     props.getArticles();
@@ -64,7 +61,7 @@ function Main(props) {
       </ShareBox>
       {props.articles.length === 0 ? (
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <p>There are no articles</p>
+          <p>Loading articles...</p>
           <div style={{ display: "flex", justifyContent: "center" }}>
             {props.loading && (
               <img style={{ width: "100px" }} src="/images/loader.svg" />
@@ -77,18 +74,15 @@ function Main(props) {
           {props.articles.length > 0 &&
             props.articles.map((article, index) => (
               <Article key={index}>
-                <button onClick={() => console.log(showEditModal)}>
-                  what is going on
-                </button>
                 {props.user.displayName === article.actor.title && (
+                  <>
                   <button onClick={() => props.handleDelete(article)}>
                     Delete Post
                   </button>
-                )}
-                {props.user.displayName === article.actor.title && (
                   <button onClick={() => setShowEditModal(!showEditModal)}>
                     Edit Post
                   </button>
+                  </>
                 )}
                 <SharedActor>
                   <a>
@@ -116,23 +110,6 @@ function Main(props) {
                     )}
                   </a>
                 </SharedImg>
-                {showEditModal && (
-                  <>
-                    <label>Edit Your Post</label>
-                    <input
-                      value={editArticle}
-                      onChange={(e) =>
-                        setEditArticle(e.target.value) &&
-                        console.log(editArticle)
-                      }
-                    />
-                    <button
-                      onClick={() => props.editArticle(article, editArticle)}
-                    >
-                      Update Post
-                    </button>
-                  </>
-                )}
                 <SocialCounts>
                   <li>
                     <button>
@@ -146,7 +123,6 @@ function Main(props) {
                         src="https://static-exp1.licdn.com/sc/h/2uxqgankkcxm505qn812vqyss"
                         alt=""
                       />
-                      <span>{props.comments}</span>
                     </button>
                   </li>
                   <li>
@@ -172,6 +148,7 @@ function Main(props) {
                   </button>
                 </SocialActions>
                 <Comments article={article} user={props.user} />
+                <EditModal showEditModal={showEditModal} setShowEditModal={setShowEditModal} />
               </Article>
             ))}
         </Content>

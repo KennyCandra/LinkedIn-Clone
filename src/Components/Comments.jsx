@@ -1,11 +1,15 @@
 import styled from "styled-components";
 import { connect } from "react-redux";
-import { addCommentAPI , editCommentAPI, removeCommentAPI } from "../Redux/actions";
+import {
+  addCommentAPI,
+  editCommentAPI,
+  removeCommentAPI,
+} from "../Redux/actions";
 import { useState } from "react";
+import CommentEditor from "./CommentEditor";
 
 function Comments(props) {
   const [comment, setComment] = useState("");
-  let commented = 'Oh I am Changed'
 
   const handleAddComment = () => {
     if (!comment) return;
@@ -14,8 +18,8 @@ function Comments(props) {
       Image: props.user.photoURL,
       name: props.user.displayName,
       articleId: props.article.id,
-      id : Math.random().toString(36).slice(2),
-      likes : [],
+      id: Math.random().toString(36).slice(2),
+      likes: [],
     };
     props.addComment(payload);
   };
@@ -32,7 +36,7 @@ function Comments(props) {
 
   return (
     <>
-      <Container>
+      <Container key={props.article.id}>
         <AddComment>
           <UserImage>
             <img src={props.user.photoURL} alt="" />
@@ -59,44 +63,46 @@ function Comments(props) {
             Comment
           </button>
         </AddComment>
-        {props.article.comments.length > 0 &&  props.article.comments.map((comment) => (
-          <Content>
-            {props.user.displayName === comment.name && (
-              <button
-                onClick={() => props.removeComment(props.article , comment.id)}
-                style={{
-                  position: "absolute",
-                  right: "1rem",
-                  top: "0.8rem",
-                  border: "none",
-                  cursor: "pointer",
-                }}
-              >
-                <img
-                  src="images/close-icon.svg"
-                  style={{ width: "20px", height: "20px" }}
-                  alt=""
-                />
-              </button>
-            )}
-            <UserImage>
-              <img src={comment.Image} alt="" />
-            </UserImage>
-            <CommentInfo>
-              <UserName>
-                <h2>{comment.name}</h2>
-              </UserName>
-              <CommentDescription>
-                <p>{comment.description}</p>
-              </CommentDescription>
-              <Interactions>
-                <button>like</button>
-                <button>reply</button>
-              </Interactions>
-            </CommentInfo>
-            <button onClick={() => props.editComment(props.article , comment.id , commented)}>Edit Comment</button>
-          </Content>
-        ))}
+        {props.article.comments.length > 0 &&
+          props.article.comments.map((comment) => (
+            <Content>
+              {/* {props.user.displayName === comment.name && (
+                <button
+                  onClick={() => props.removeComment(props.article, comment.id)}
+                  style={{
+                    position: "absolute",
+                    right: "1rem",
+                    top: "0.8rem",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                </button>
+              )} */}
+              <UserImage>
+                <img src={comment.Image} alt="" />
+              </UserImage>
+              <CommentInfo>
+                <UserName>
+                  <h2>{comment.name}</h2>
+                </UserName>
+                <CommentDescription>
+                  <CommentEditor
+                    article={props.article}
+                    comment={comment}
+                    editComment={props.editComment}
+                    description={comment.description}
+                    removeComment={props.removeComment}
+                    user={props.user}
+                  />
+                </CommentDescription>
+                <Interactions>
+                  <button>like</button>
+                  <button>reply</button>
+                </Interactions>
+              </CommentInfo>
+            </Content>
+          ))}
       </Container>
     </>
   );
@@ -161,8 +167,10 @@ const Interactions = styled.div`
 const mapDispatchToProps = (dispatch) => {
   return {
     addComment: (payload) => dispatch(addCommentAPI(payload)),
-    removeComment : (payload , commentId) => dispatch(removeCommentAPI(payload , commentId)),
-    editComment : (payload , commentId , newComment)  => dispatch(editCommentAPI(payload , commentId , newComment)),
+    removeComment: (payload, commentId) =>
+      dispatch(removeCommentAPI(payload, commentId)),
+    editComment: (payload, commentId, newComment) =>
+      dispatch(editCommentAPI(payload, commentId, newComment)),
   };
 };
 
