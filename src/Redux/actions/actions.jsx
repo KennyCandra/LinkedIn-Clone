@@ -21,6 +21,13 @@ export const getArticles = (payload) => {
   };
 };
 
+export const postArticle = (payload) => {
+  return {
+    type: actions.POST_ARTICLE,
+    payload: payload,
+  };
+};
+
 export const deleteArticle = (payload) => {
   return {
     type: actions.DELETE_ARTICLE,
@@ -63,3 +70,17 @@ export const addLike = (payload) => {
     payload: payload,
   };
 };
+
+export const setNotifications = (payload) => {
+  return {
+    type: actions.SET_NOTIFICATIONS,
+    payload: payload,
+  };
+}
+
+export const getNotifications = (payload) => {
+  return {
+    type : actions.GET_NOTIFICATIONS,
+    payload : payload
+  }
+}

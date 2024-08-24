@@ -5,16 +5,31 @@ import {
   editCommentAPI,
   removeCommentAPI,
 } from "../Redux/actions";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CommentEditor from "./CommentEditor";
 
 function Comments(props) {
   const [comment, setComment] = useState("");
+  const inputRef = useRef();
+
+  useEffect(() => {
+    if(props.setFoucsFunction) {
+      props.setFoucsFunction(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      });
+    }
+  }, [props.setFocusFunction]);
 
   const handleAddComment = () => {
     if (!comment) return;
     const payload = {
+      user : props.article.user,
+      action: "comment",
+      article: props.article,
       description: comment,
+      uid : props.article.uid,
       Image: props.user.photoURL,
       name: props.user.displayName,
       articleId: props.article.id,
@@ -45,40 +60,16 @@ function Comments(props) {
             type="text"
             placeholder="Add a comment"
             value={comment}
+            ref={inputRef}
             onChange={handleChange}
           />
-          <button
-            type="submit"
-            onClick={handleClick}
-            style={{
-              position: "absolute",
-              right: "1rem",
-              top: "0.8rem",
-              border: "none",
-              background: "transparent",
-              color: "#958b7b",
-              cursor: "pointer",
-            }}
-          >
+          <SubmitButton type="submit" onClick={handleClick}>
             Comment
-          </button>
+          </SubmitButton>
         </AddComment>
         {props.article.comments.length > 0 &&
           props.article.comments.map((comment) => (
             <Content>
-              {/* {props.user.displayName === comment.name && (
-                <button
-                  onClick={() => props.removeComment(props.article, comment.id)}
-                  style={{
-                    position: "absolute",
-                    right: "1rem",
-                    top: "0.8rem",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
-                >
-                </button>
-              )} */}
               <UserImage>
                 <img src={comment.Image} alt="" />
               </UserImage>
@@ -114,6 +105,15 @@ const Container = styled.div`
   gap: 1rem;
   padding: 1rem;
   flex-direction: column;
+  
+  input {
+    border: 1px solid grey;
+
+    &:focus {
+      border: 2px solid grey;
+    }
+
+  }
 `;
 
 const Content = styled.div`
@@ -150,7 +150,7 @@ const UserImage = styled.div`
 `;
 const UserName = styled.div``;
 const CommentDescription = styled.div`
-  margin-block: 1rem;
+  margin-block: 0.5rem;
 `;
 const Interactions = styled.div`
   display: flex;
@@ -162,6 +162,16 @@ const Interactions = styled.div`
     font-size: 1rem;
     cursor: pointer;
   }
+`;
+
+const SubmitButton = styled.button`
+  position: absolute;
+  right: 1rem;
+  top: 0.8rem;
+  border: none;
+  background: transparent;
+  color: #958b7b;
+  cursor: pointer;
 `;
 
 const mapDispatchToProps = (dispatch) => {

@@ -113,5 +113,9 @@ const BannerCard = styled(FolllowCard)`
     width: 100%;
     height: 100%;
   }
+
+  @media (max-width: 992px) {
+    display: none;
+  }
 `;
 export default Right;

@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import styled from "styled-components";
 
 function CommentEditor({
   comment,
@@ -11,14 +12,10 @@ function CommentEditor({
   const [newComment, setNewComment] = useState(null);
   const [editContent, setEditContent] = useState(false);
   const [commentActions, setCommentActions] = useState(false);
-
-  useEffect(() => {
-    console.log(commentActions);
-  }, [commentActions]);
+  const actionRef = useRef(null);
 
   const handleChange = (e) => {
     setNewComment(e.target.value);
-    console.log(newComment);
   };
 
   useEffect(() => {
@@ -27,7 +24,8 @@ function CommentEditor({
 
   const handleClick = () => {
     setEditContent(!editContent);
-    console.log(newComment);
+    setCommentActions(false);
+    setNewComment(description);
   };
 
   const handleClickChangeComment = (e) => {
@@ -35,95 +33,174 @@ function CommentEditor({
     setEditContent(!editContent);
   };
 
+  const handleClickOut = (e) => {
+    if (actionRef.current && !actionRef.current.contains(e.target)) {
+      setCommentActions(false);
+    }
+  };
+
+  useEffect(() => {
+    if (commentActions) {
+      document.addEventListener("mousedown", handleClickOut);
+    } else {
+      document.removeEventListener("mousedown", handleClickOut);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOut);
+    };
+  }, [commentActions]);
+
   return (
-    <>
-      <div>
-        {!editContent ? (
-          <>
-            <button
-              onClick={() => setCommentActions(!commentActions)}
-              style={{
-                background: "none",
-                cursor: "pointer",
-                border: "none",
-                position: "absolute",
-                right: "1rem",
-                top: "0.8rem",
-                border: "none",
-              }}
-            >
-              <img
-                src="images/three-dots-svgrepo-com.svg"
-                style={{ width: "20px", height: "20px", pointer: "cursor" }}
-                alt=""
-              />
-            </button>
-            {commentActions && (
-              <div
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  border: "1px solid red",
-                }}
-              >
-                <div
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    border: "1px solid red",
-                  }}
-                >
-                  <button
-                    onClick={() => removeComment(article, comment.id)}
-                    style={{
-                      border: "1px solid red",
-                      cursor: "pointer",
-                    }}
+    <CommentContainer>
+      {!editContent ? (
+        <CommentContainer>
+          {user.displayName === comment.name && (
+            <Container>
+              <Actions onClick={() => setCommentActions(!commentActions)}>
+                <img src="images/three-dots-svgrepo-com.svg" />
+              </Actions>
+              {commentActions && (
+                <ButtonActionContainer ref={actionRef}>
+                  <ButtonAction
+                    onClick={() =>
+                      removeComment(article, comment.id) &&
+                      setCommentActions(false)
+                    }
                   >
-                    {" "}
-                    <img
-                      src="images/close-icon.svg"
-                      style={{ width: "20px", height: "20px" }}
-                      alt=""
-                    />
-                  </button>
-                </div>
-                <button onClick={handleClick}>Edit</button>
-              </div>
-            )}
-            <p contentEditable={editContent}>{newComment}</p>
-          </>
-        ) : (
-          <>
-            <input
-              type="text"
-              placeholder="Add Comment..."
-              value={newComment}
-              onChange={handleChange}
-            />
-            <div>
-              <button
-                style={{ background: "blue" }}
-                onClick={handleClickChangeComment}
-              >
-                Save Edit
-              </button>
-              <button style={{ background: "red" }} onClick={handleClick}>
-                Cancel
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    </>
+                    <img src="images/close-icon.svg" alt="" />
+                    <p>Delete</p>
+                  </ButtonAction>
+                  <ButtonAction onClick={handleClick}>
+                    <img src="images/close-icon.svg" alt="" />
+                    <p>edit</p>
+                  </ButtonAction>
+                </ButtonActionContainer>
+              )}
+            </Container>
+          )}
+          <p>{comment.description}</p>
+        </CommentContainer>
+      ) : (
+        <>
+          <input
+            style={{
+              width: "auto",
+              height: "3rem",
+              border: "none",
+              display: "block",
+              outline: "none",
+            }}
+            type="text"
+            placeholder="Edit your Comment..."
+            value={newComment}
+            onChange={handleChange}
+          />
+          <EditActionContainer>
+            <EditButton
+              disabled={newComment == description}
+              onClick={handleClickChangeComment}
+            >
+              Save Edit
+            </EditButton>
+            <CancelEditButton onClick={handleClick}>Cancel</CancelEditButton>
+          </EditActionContainer>
+        </>
+      )}
+    </CommentContainer>
   );
 }
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-    editComment: (payload, commentId, newComment) =>
-      dispatch(editCommentAPI(payload, commentId, newComment)),
-  };
-};
+const CommentContainer = styled.div`
+  display: flex;
+  p {
+    font-size: 15px;
+    text-align: left;
+  }
+`;
+
+const Container = styled.div`
+  p {
+    text-align: left;
+    line-height: 1.5;
+  }
+`;
+
+const Actions = styled.button`
+  background: none;
+  cursor: pointer;
+  border: none;
+  position: absolute;
+  right: 1rem;
+  top: 0;
+
+  img {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
+`;
+
+const ButtonActionContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 10rem;
+  position: absolute;
+  right: 1rem;
+  top: 1.2rem;
+  border-radius: 5px;
+  padding: 0.5rem;
+  z-index: 100;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 15%), 0 0 0 rgb(0 0 0 / 20%);
+  padding: 0;
+`;
+
+const ButtonAction = styled.button`
+  display: flex;
+  justify-content: flex-start;
+  gap: 1rem;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: none;
+  padding: 10px;
+  cursor: pointer;
+  background-color: white;
+
+  &:hover {
+    background-color: #ccc;
+  }
+
+  img {
+    width: 20px;
+    height: 20px;
+  }
+`;
+
+const EditActionContainer = styled.div`
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  border: 1p solid black;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+`;
+
+const EditButton = styled.button`
+  background: #0a66c2;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  transition: 0.4s ease;
+  color: white;
+  padding: 10px;
+
+  &:disabled {
+    color: black;
+    background-color: rgba(0, 0, 0, 0.08);
+  }
+`;
+const CancelEditButton = styled.button``;
 
 export default CommentEditor;

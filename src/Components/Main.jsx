@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { connect } from "react-redux";
 import PostModal from "./PostModal";
 import styled from "styled-components";
@@ -12,16 +12,34 @@ import ReactPlayer from "react-player";
 import Comments from "./Comments";
 import LikeButton from "./LikeButton";
 import EditModal from "./EditModal";
+import EditPostModal from "./EditPostModal";
 
 function Main(props) {
   const [show, setShow] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [articleActionButton, setArticleActionButton] = useState({});
+  const commentFocusFunctions = useRef({});
+
+  const toggleActionButton = (articleId) => {
+    setArticleActionButton((prev) => ({
+      ...prev,
+      [articleId]: !prev[articleId],
+    }));
+  };
 
   const handleClick = () => {
     setShow(!show);
   };
 
-  
+  const handleEditPostModalClick = () => {
+    setShowEditModal(!showEditModal);
+  };
+
+  const handleCommentClick = (articleId) => {
+    if (commentFocusFunctions.current[articleId]) {
+      commentFocusFunctions.current[articleId]();
+    }
+  };
 
   useEffect(() => {
     props.getArticles();
@@ -37,7 +55,7 @@ function Main(props) {
             <img src="/images/user.svg" />
           )}
           <button onClick={handleClick} disabled={props.loading ? true : false}>
-            Start a Box
+            Start a Post
           </button>
         </div>
         <div>
@@ -75,14 +93,35 @@ function Main(props) {
             props.articles.map((article, index) => (
               <Article key={index}>
                 {props.user.displayName === article.actor.title && (
-                  <>
-                  <button onClick={() => props.handleDelete(article)}>
-                    Delete Post
-                  </button>
-                  <button onClick={() => setShowEditModal(!showEditModal)}>
-                    Edit Post
-                  </button>
-                  </>
+                  <ArticleActionButtons
+                    onClick={() => toggleActionButton(article.id)}
+                  >
+                    <img src="images/three-dots-svgrepo-com.svg" />
+                  </ArticleActionButtons>
+                )}
+                {articleActionButton[article.id] && (
+                  <ArticleActionButonsContainer>
+                    <ActionButton onClick={() => props.handleDelete(article)}>
+                      <img src="images/close-icon.svg" alt="" />
+                      Delete Post
+                    </ActionButton>
+                    <ActionButton
+                      onClick={() => setShowEditModal(!showEditModal)}
+                    >
+                      <img src="images/edit.svg" alt="" />
+                      Edit Post
+                    </ActionButton>
+
+                    {showEditModal && (
+                      <EditPostModal
+                        showEditModal={showEditModal}
+                        setShowEditModal={setShowEditModal}
+                        handleEditPostModalClick={handleEditPostModalClick}
+                        user={props.user}
+                        article={article}
+                      />
+                    )}
+                  </ArticleActionButonsContainer>
                 )}
                 <SharedActor>
                   <a>
@@ -133,8 +172,12 @@ function Main(props) {
                   </li>
                 </SocialCounts>
                 <SocialActions>
-                 <LikeButton article={article} user ={props.user} addLike={props.addLike}  />
-                  <button>
+                  <LikeButton
+                    article={article}
+                    user={props.user}
+                    addLike={props.addLike}
+                  />
+                  <button onClick={() => handleCommentClick(article.id)}>
                     <img src="/images/comment-icon.svg" alt="" />
                     <span>Comment</span>
                   </button>
@@ -147,8 +190,17 @@ function Main(props) {
                     <span>Send</span>
                   </button>
                 </SocialActions>
-                <Comments article={article} user={props.user} />
-                <EditModal showEditModal={showEditModal} setShowEditModal={setShowEditModal} />
+                <Comments
+                  article={article}
+                  user={props.user}
+                  setFoucsFunction={(focusFn) => {
+                    commentFocusFunctions.current[article.id] = focusFn;
+                  }}
+                />
+                <EditModal
+                  showEditModal={showEditModal}
+                  setShowEditModal={setShowEditModal}
+                />
               </Article>
             ))}
         </Content>
@@ -251,6 +303,26 @@ const ShareBox = styled(CommonCard)`
           margin-top: 2px;
         }
       }
+    }
+
+
+      @media (max-width: 1200px) {
+        &:nth-child(2) {
+        justify-content: space-around;
+          button{
+            width: 30%;
+          }
+        }
+      }
+
+      @media (max-width: 992px) {
+        &:nth-child(2) {
+          button{
+            width: auto;
+          }
+        }
+      }
+
     }
   }
 `;
@@ -363,23 +435,43 @@ const SocialActions = styled.div`
   margin: 0;
   min-height: 40px;
   padding: 4px 8px;
+
+  @media (max-width: 267px) {
+    display: block;
+  }
   button {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    padding: 8px;
     color: rgba(0, 0, 0, 0.6);
     border: none;
     background-color: white;
     cursor: pointer;
     border-radius: 5px;
     transition: background 0.3s;
-    width: calc(100% / 4);
+    width: 25%;
     height: 60px;
     justify-content: center;
-
     &:hover {
       background: rgba(0, 0, 0, 0.08);
     }
+
+    @media (min-width: 992px) and (max-width: 1200px) {
+      span {
+        display: none;
+      }
+    }
+
+    @media (max-width: 430px) {
+      span {
+        display: none;
+      }
+    }
+
+    @media (max-width: 267px) {
+      display: block;
+      width: 100%;
+    }
+
     @media (min-width: 768px) {
       span {
         margin-left: 8px;
@@ -387,6 +479,68 @@ const SocialActions = styled.div`
         font-weight: 600;
       }
     }
+  }
+`;
+
+const ArticleActionButtons = styled.button`
+  background: none;
+  border: none;
+  position: absolute;
+  right: 1rem;
+  top: 5px;
+  cursor: pointer;
+  z-index: 1;
+  transition: background 0.2s;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.08);
+  }
+
+  img {
+    width: 20px;
+    height: 20px;
+  }
+`;
+
+const ArticleActionButonsContainer = styled.div`
+  position: absolute;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 15%), 0 0 0 rgb(0 0 0 / 20%);
+  right: 0.5rem;
+  top: 15%;
+  width: 335px;
+  background: #ccc;
+  z-index: 1;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  border-radius: 5px;
+  gap: 5px;
+  padding-block: 3px;
+`;
+
+const ActionButton = styled.button`
+  background: white;
+  min-height: 56px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  transition: background 0.2s;
+  z-index: 9999;
+  &:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  img {
+    width: 20px;
+    height: 20px;
+    margin-right: 15px;
   }
 `;
 

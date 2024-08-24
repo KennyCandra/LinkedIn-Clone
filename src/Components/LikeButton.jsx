@@ -1,6 +1,6 @@
 import { Timestamp } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 
 const likeTypes = {
   none: {
@@ -34,37 +34,47 @@ const likeTypes = {
     spanColor: "#F7B239",
     filter: "none",
   },
+  notLauging: {
+    type: "notLauging",
+    icon: "/images/laughing.svg",
+    spanColor: "#F7B239",
+    filter: "none",
+  },
+  WOW: {
+    type: "WOW",
+    icon: "/images/laughing.svg",
+    spanColor: "#F7B239",
+    filter: "none",
+  },
 };
 
 const likeTypesArray = Object.values(likeTypes).slice(1);
 
 function LikeButton({ article, user, addLike }) {
-  const [appear, setAppear] = React.useState(false);
   const currentLike = article.likes.find((like) => like.email === user.email);
   const likeType = currentLike ? currentLike.type : "none";
-  const [hoverTime, setHoverTime] = useState(null);
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const [websiteTypeLike, setWebsiteTypeLike] = useState(likeType || "none");
+  const [disableLikeButton, setDisableLikeButton] = useState(false);
 
   useEffect(() => {
-    console.log(hoverTime)
-  },[hoverTime])
+    setWebsiteTypeLike(likeType);
+  }, [likeType]);
 
-  const handleMouseOver = () => {
-    setHoverTime(setTimeout(() => setAppear(true), 1000));
-  };
-
-  const handleMouseLeave = () => {
-    if(hoverTime) {
-      clearTimeout(hoverTime);
-      setHoverTime(null);
+  useEffect(() => {
+    if (disableLikeButton) {
+      setTimeout(() => {
+        setDisableLikeButton(false);
+      }, 100);
     }
-    setAppear(false);
-  }
+  }, [disableLikeButton]);
 
-  useEffect(() => {
-    console.log(appear);
-  }, [appear]);
+  const handleLike = async (likeTypeAPI) => {
+    const previousLikeType = websiteTypeLike;
+    setDisableLikeButton(true);
+    setWebsiteTypeLike(likeTypeAPI);
+    setIsMenuVisible(false);
 
-  const handleLike = (likeTypeAPI) => {
     const payload = {
       Timestamp: Timestamp.now(),
       id: Math.random().toString(36).slice(2),
@@ -72,88 +82,113 @@ function LikeButton({ article, user, addLike }) {
       email: user.email,
       type: likeTypeAPI,
     };
-    console.log(payload);
-    addLike(article, payload);
-    setAppear(false);
-    clearTimeout(hoverTime);
-    setHoverTime(null);
+    try {
+      await addLike(article, payload);
+    } catch (error) {
+      setWebsiteTypeLike(previousLikeType);
+    }
+  };
+
+  const handleMouseDown = () => {
+    setIsMenuVisible(false);
+  };
+
+  const handleMouseEnter = () => {
+    setIsMenuVisible(true);
   };
 
   return (
     <>
-      <button
+      <LikeButtonAction
+        onMouseLeave={handleMouseDown}
+        onMouseEnter={handleMouseEnter}
+        disabled={disableLikeButton}
         onClick={
           likeType === "none"
             ? () => handleLike("Like")
-            : () => handleLike(likeTypes[likeType].type)
+            : () => handleLike(likeTypes[websiteTypeLike].type)
         }
-        onMouseOver={handleMouseOver}
-        onMouseLeave={handleMouseLeave}
       >
         <img
-          style={{ width: "20px", filter: likeTypes[likeType].filter }}
-          src={likeTypes[likeType].icon}
+          style={{ filter: likeTypes[websiteTypeLike].filter }}
+          src={likeTypes[websiteTypeLike].icon}
           alt="Like"
         />
         <span
           style={{
-            color: likeTypes[likeType].spanColor,
+            color: likeTypes[websiteTypeLike].spanColor,
             transition: "transform 0.2s ease-in-out",
           }}
         >
-          {likeType === "none" ? "Like" : likeType}
+          {websiteTypeLike === "none" ? "Like" : websiteTypeLike}
         </span>
-      </button>
-      <LikeTypesContainer
-        style={appear ? { opacity: 1 } : { opacity: 0 }}
-        onMouseOver={handleMouseOver}
-        onMouseLeave={handleMouseLeave}
-      >
-        <ListOfIcons>
-          {likeTypesArray.map((likeType) => (
-            <ListedIcons>
-              <button
+        {isMenuVisible && (
+          <LikeTypesContainer>
+            {likeTypesArray.map((likeType, i) => (
+              <ListedIcons
+                key={i}
                 onClick={() => handleLike(likeType.type)}
-                style={{ background: "none" }}
+                style={{ animationDelay: `${i * 0.05}s` }}
               >
                 <img
                   style={{
-                    width: "30px",
-                    height: "30px",
                     filter: likeType.filter,
                   }}
                   src={likeType.icon}
                 />
-              </button>
-            </ListedIcons>
-          ))}
-        </ListOfIcons>
-      </LikeTypesContainer>
+              </ListedIcons>
+            ))}
+          </LikeTypesContainer>
+        )}
+      </LikeButtonAction>
     </>
   );
 }
 
-const LikeTypesContainer = styled.div`
-  width: 15rem;
-  position: absolute;
-  top: 7rem;
-  background-color: white;
-  border: 1px solid black;
-  border-radius: 2%;
-  box-shadow: 5px 2px #888888;
-  transition: 0.2s ease;
+const LikeButtonAction = styled.button`
+  display: flex;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  img {
+    width: 20px;
+    height: 20px;
+  }
 `;
 
-const ListOfIcons = styled.ul`
+const LikeTypesContainer = styled.div`
+  position: absolute;
   display: flex;
-  list-style: none;
-  width: 100%;
-  height: 50px;
+  width: 150%;
+  height: 2.3rem;
+  justify-content: space-evenly;
+  align-items: center;
+  left: 10px;
+  top: -30px;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 10px;
+  box-shadow: 5px 2px #888888;
   padding-inline: 10px;
 `;
-const ListedIcons = styled.li`
-  style: none;
-  width: 20%;
+
+const likeAnimation = keyframes`
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+        transform: translateY(-5px);
+
+  }
+  100% {
+        transform: translateY(0);
+
+  }
+`;
+const ListedIcons = styled.div`
+  animation: ${likeAnimation} 0.5s;
   button {
     background-color: transparent;
     border: none;
@@ -163,6 +198,9 @@ const ListedIcons = styled.li`
   }
 
   img {
+    width: 25px;
+    height: 25px;
+    padding: 0;
     &:hover {
       transform: scale(1.2);
       transition: transform 0.2s ease-in-out;

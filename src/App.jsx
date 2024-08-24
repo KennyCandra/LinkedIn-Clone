@@ -1,51 +1,61 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import "./App.css";
-import LoginPage from "./Components/LoginPage";
-import Home from "./Components/Home";
+import LoginPage from "./Pages/LoginPage";
+import Home from "./Pages/Home";
 import { connect, Provider } from "react-redux";
 import store from "./Redux/app/store";
 import Header from "./Components/Header";
 import { getUserAuth } from "./Redux/actions";
 import { useEffect } from "react";
-import RequireAuth from "./Components/RequireAuth";
+import RequireAuth from "./Pages/RequireAuth";
+import NotificationPage from "./Pages/NotificationPage";
 
 function App(props) {
   useEffect(() => {
-    props.getUserAuth;
-  }, []);
+    props.getUserAuth();
+  }, [props]);
 
   return (
-    <>
-      <Provider store={store}>
-        <Router>
-          <Routes>
-            <Route path="/" element={<LoginPage />} />
+      <Router>
+        <Routes>
+          <Route path="/" element={<LoginPage />} />
+          <Route element={<RequireAuth />}>
             <Route
               path="/home"
               element={
-                <RequireAuth>
+                <>
                   <Header />
                   <Home />
-                </RequireAuth>
+                </>
               }
             />
-          </Routes>
-        </Router>
-      </Provider>
-    </>
+            <Route
+              path="/notifications"
+              element={
+                <>
+                  <Header />
+                  <NotificationPage />
+                </>
+              }
+            />
+          </Route>
+        </Routes>
+      </Router>
   );
 }
 
-const mapStateToProps = (state) => {
-  return {};
+const mapDispatchToProps = (dispatch) => ({
+  getUserAuth: () => dispatch(getUserAuth()),
+});
+
+const ConnectedApp = connect(null, mapDispatchToProps)(App);
+
+const AppWithProvider = () => {
+  return (
+    <Provider store={store}>
+      <ConnectedApp />
+    </Provider>
+  );
 };
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-    getUserAuth: () => dispatch(getUserAuth()),
-  };
-};
-
-const ConnectedApp = connect(mapStateToProps, mapDispatchToProps)(App);
-
-export default App;
+export default AppWithProvider;

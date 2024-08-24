@@ -20,24 +20,28 @@ import {
 
 export const checkLocalStorage = () => {
   return (dispatch) => {
-    if (localStorage.getItem("user")) {
-      dispatch(actions.setUser(JSON.parse(localStorage.getItem("user"))));
-    } else {
-      return null;
+    try {
+      if (localStorage.getItem("user")) {
+        const user = JSON.parse(localStorage.getItem("user"));
+        dispatch(actions.setUser(user));
+      }
+    } catch (error) {
+      console.error(error);
+      localStorage.removeItem("user");
     }
   };
 };
 
 export const signInAPI = () => {
-  return (dispatch) => {
-    signInWithPopup(auth, provider)
-      .then((payload) => {
-        localStorage.setItem("user", JSON.stringify(payload.user));
-        dispatch(actions.setUser(payload.user));
-      })
-      .catch((error) => {
-        alert(error.message);
-      });
+  return async (dispatch) => {
+    try {
+      const result = signInWithPopup(auth, provider);
+      const user = result.user;
+      localStorage.setItem("user", JSON.stringify(payload.user));
+      dispatch(actions.setUser(user));
+    } catch (error) {
+      console.error(error);
+    }
   };
 };
 
@@ -52,59 +56,45 @@ export const getUserAuth = () => {
 };
 
 export const signOutAPI = () => {
-  return (dispatch) => {
-    auth
-      .signOut()
-      .then(() => {
-        localStorage.clear();
-        dispatch(actions.setUser(null));
-      })
-      .catch((error) => alert(error.message));
+  return async (dispatch) => {
+    try {
+      auth.signOut();
+      localStorage.removeItem("user");
+      dispatch(actions.setUser(null));
+    } catch (error) {
+      console.error(error);
+    }
   };
 };
 
-export const postArticleAPI = (payload) => {
-  return (dispatch) => {
-    if (payload.image) {
-      dispatch(actions.setLoading(true));
-      const storageRef = ref(storage, `images/${payload.image.name}`);
-      const uploadRef = uploadBytesResumable(storageRef, payload.image);
 
-      uploadRef.on(
-        "state_changed",
-        (snapshot) => {
-          const progress =
-            Math.round(snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log("progress", progress);
-        },
-        (error) => {
-          alert(error);
-        },
-        () => {
-          getDownloadURL(uploadRef.snapshot.ref).then((downloadURL) => {
-            const collRef = collection(db, "articles");
-            addDoc(collRef, {
-              actor: {
-                description: payload.user.email,
-                title: payload.user.displayName,
-                date: payload.timestamp,
-                image: payload.user.photoURL,
-              },
-              video: payload.video,
-              sharedImg: downloadURL,
-              comments: [],
-              description: payload.description,
-              id: payload.id,
-              likes: [],
-            });
-          });
-          dispatch(actions.setLoading(false));
-        }
-      );
-    } else if (payload.video) {
+const uploadImage = async (image) => {
+  const storageRef = ref(storage, `images/${image.name}`);
+  const uploadRef = await uploadBytesResumable(storageRef, image);
+  return getDownloadURL(uploadRef.ref);
+};
+
+const createArticleDocument = async (articleData) => {
+  const collRef = collection(db, "articles");
+  return addDoc(collRef, articleData);
+};
+
+const createNotificationDocument = async (payload) => {
+  const collRef = collection(db, "notifications");
+  return addDoc(collRef, payload);
+};
+
+export const postArticleAPI = (payload) => {
+  return async (dispatch) => {
+    try {
       dispatch(actions.setLoading(true));
-      const collRef = collection(db, "articles");
-      addDoc(collRef, {
+
+      let sharedImg = null;
+      if (payload.image) {
+        sharedImg = await uploadImage(payload.image);
+      }
+
+      const articleData = {
         actor: {
           description: payload.user.email,
           title: payload.user.displayName,
@@ -112,31 +102,22 @@ export const postArticleAPI = (payload) => {
           image: payload.user.photoURL,
         },
         video: payload.video,
-        sharedImg: payload.image,
+        sharedImg: sharedImg || payload.image,
         comments: [],
         description: payload.description,
         id: payload.id,
         likes: [],
-      });
+        uid: payload.user.uid
+      };
+
+      const docRef = await createArticleDocument(articleData);
+      const articleWithId = { id: docRef.id, ...articleData };
+      dispatch(actions.postArticle(articleWithId));
+
       dispatch(actions.setLoading(false));
-    } else {
-      dispatch(actions.setLoading(true));
-      const collRef = collection(db, "articles");
-      addDoc(collRef, {
-        actor: {
-          description: payload.user.email,
-          title: payload.user.displayName,
-          date: payload.timestamp,
-          image: payload.user.photoURL,
-        },
-        video: payload.video,
-        sharedImg: payload.image,
-        comments: [],
-        description: payload.description,
-        id: payload.id,
-        likes: [],
-      });
+    } catch (error) {
       dispatch(actions.setLoading(false));
+      console.error(error);
     }
   };
 };
@@ -149,6 +130,19 @@ export const getArticlesApi = () => {
     onSnapshot(orderedRef, (snapshot) => {
       payload = snapshot.docs.map((doc) => doc.data());
       dispatch(actions.getArticles(payload));
+    });
+  };
+};
+
+export const getNotificationsAPI = () => {
+  return (dispatch) => {
+    let payload;
+    const collRef = collection(db, "notifications");
+    // const orderedRef = query(collRef, orderBy("actor.date", "desc"));
+    onSnapshot(collRef, (snapshot) => {
+      payload = snapshot.docs.map((doc) => doc.data());
+      console.log(payload)
+      dispatch(actions.getNotifications(payload));
     });
   };
 };
@@ -176,8 +170,17 @@ export const addCommentAPI = (payload) => {
       const q = query(articleRef, where("id", "==", payload.articleId));
       const querySnapshot = await getDocs(q);
       const docToUpdate = querySnapshot.docs[0];
-      console.log(docToUpdate);
-
+      const postOwner = payload.article.actor.title;
+      const commentNotification = {
+        actorName: payload.article.actor.title,
+        name: payload.name,
+        uid: payload.uid,
+        Image: payload.Image,
+        action: payload.action,
+        description: payload.description,
+        id: payload.id,
+        seen : false
+      };
       await updateDoc(docToUpdate.ref, {
         comments: arrayUnion({
           description: payload.description,
@@ -187,6 +190,7 @@ export const addCommentAPI = (payload) => {
           likes: [],
         }),
       });
+      const notRef = await postOwner !== payload.name ? createNotificationDocument(commentNotification) : null
 
       dispatch(actions.addComment(payload));
     } catch (error) {
@@ -255,7 +259,7 @@ export const editCommentAPI = (payload, commentId, newComment) => {
   };
 };
 
-export const addLike = (article , payload) => {
+export const addLike = (article, payload) => {
   return async (dispatch) => {
     try {
       const articleRef = collection(db, "articles");
@@ -263,36 +267,33 @@ export const addLike = (article , payload) => {
       const querySnapshot = await getDocs(q);
       const docToUpdate = querySnapshot.docs[0];
       const newlikes = docToUpdate.data().likes;
-      const findLike = newlikes.find(
-        (like) => like.email === payload.email)
-      if(findLike === undefined){
-       await updateDoc(docToUpdate.ref, {
+      const findLike = newlikes.find((like) => like.email === payload.email);
+      const updatedLike = newlikes.map((like) =>
+        like.email === payload.email ? { ...like, type: payload.type } : like
+      );
+      if (findLike === undefined) {
+        await updateDoc(docToUpdate.ref, {
           likes: arrayUnion({
             ...newlikes,
-            Timestamp : payload.Timestamp,
-            id : payload.id,
-            userName : payload.userName,
-            email : payload.email,
-            type : payload.type,
+            Timestamp: payload.Timestamp,
+            id: payload.id,
+            userName: payload.userName,
+            email: payload.email,
+            type: payload.type,
           }),
         });
       } else if (findLike !== undefined && findLike.type !== payload.type) {
         await updateDoc(docToUpdate.ref, {
-          likes: arrayRemove({ ...findLike }),
-        })
-        await updateDoc(docToUpdate.ref, {
-          likes: arrayUnion({
-            ...findLike, type:payload.type
-          }),
+          likes: updatedLike,
         });
       } else if (findLike !== undefined && findLike.type === payload.type) {
         await updateDoc(docToUpdate.ref, {
           likes: arrayRemove({ ...findLike }),
-        })
+        });
       }
-      dispatch(actions.addLike(article , {...payload , likes: newlikes}));
+      dispatch(actions.addLike(article, { ...payload, likes: newlikes }));
     } catch (error) {
-      console.error("Error adding comment: ", error);
+      console.error("Error adding like: ", error);
     }
   };
 };
