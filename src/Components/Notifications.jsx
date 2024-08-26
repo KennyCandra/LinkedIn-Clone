@@ -14,7 +14,7 @@ function Notifications(props) {
 
   useEffect(() => {
     props.getNotificationsAPI(props.user.uid);
-  }, [props.notifications]);
+  }, []);
 
   useEffect(() => {
     setNewNotificationArr(
@@ -22,7 +22,7 @@ function Notifications(props) {
         (notification) => notification.uid === props.user.uid
       )
     );
-  }, [props.notifications]);
+  }, []);
 
   useEffect(() => {
     !props.user ? navigate("/home") : null;

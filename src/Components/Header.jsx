@@ -17,7 +17,16 @@ function Header(props) {
 
   useEffect(() => {
     props.getNotificationsAPI(props.user.uid);
-  }, [props.user]);
+  }, [props.notifications]);
+
+  useEffect(() => {
+    setNotificationArr(
+      props.notifications.filter(
+        (notification) => notification.uid === props.user.uid && !notification.seen
+      )
+    );
+  }, [props.notifications]);
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -110,9 +119,9 @@ function Header(props) {
                     right: "30%",
                   }}
                 >
-                  <span style={{ color: "white", fontSize: "10px" }}>
+                  <p style={{ color: "white", fontSize: "10px" }}>
                     {notificationArr.length}
-                  </span>
+                  </p>
                 </div>
               )}
             </button>

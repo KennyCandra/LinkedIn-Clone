@@ -1,24 +1,23 @@
-import React, { useEffect } from 'react'
-import { connect } from 'react-redux'
-import { Outlet, useNavigate } from 'react-router-dom'
+import React, { useEffect } from "react";
+import { connect } from "react-redux";
+import { Outlet, useNavigate } from "react-router-dom";
 
-function RequireAuth({user , children}) {
-    const navigate = useNavigate()
+function RequireAuth({ user, children }) {
+  const navigate = useNavigate();
 
+  if (!user) {
+    return navigate("/", { replace: true });
+  }
 
-    if(!user){
-      return navigate('/' , {replace: true})
-    }
-
-    return <Outlet />
+  return <Outlet />;
 }
 
 const mapStateToProps = (state) => {
   return {
-    user: state.userState.user
-  }
-}
+    user: state.userState.user,
+  };
+};
 
-const connectedApp = connect(mapStateToProps)(RequireAuth)
+const connectedApp = connect(mapStateToProps)(RequireAuth);
 
-export default connectedApp
+export default connectedApp;

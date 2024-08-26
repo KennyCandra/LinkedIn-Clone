@@ -151,7 +151,6 @@ export const handleDelete = (payload) => {
       const articlesRef = collection(db, "articles");
       const q = query(articlesRef, where("id", "==", payload.id));
       const querySnapshot = await getDocs(q);
-
       const docToDelete = querySnapshot.docs[0];
       await deleteDoc(doc(db, "articles", docToDelete.id));
       dispatch(actions.deleteArticle(payload));
