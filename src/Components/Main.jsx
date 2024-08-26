@@ -83,11 +83,11 @@ function Main(props) {
           {props.articles.length > 0 &&
             props.articles.map((article, index) => (
               <Article
+                key={index}
                 article={article}
                 user={props.user}
                 toggleActionButton={toggleActionButton}
                 articleActionButton={articleActionButton}
-                handleDelete={props.handleDelete}
                 showEditModal={showEditModal}
                 setShowEditModal={setShowEditModal}
                 handleEditPostModalClick={handleEditPostModalClick}

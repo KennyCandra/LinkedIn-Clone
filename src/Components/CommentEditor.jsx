@@ -71,7 +71,7 @@ function CommentEditor({
                     <p>Delete</p>
                   </ButtonAction>
                   <ButtonAction onClick={handleClick}>
-                    <img src="images/close-icon.svg" alt="" />
+                    <img src="images/edit.svg" alt="" />
                     <p>edit</p>
                   </ButtonAction>
                 </ButtonActionContainer>

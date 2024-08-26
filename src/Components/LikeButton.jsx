@@ -58,14 +58,6 @@ function LikeButton({ article, user, addLike }) {
   const [disableLikeButton, setDisableLikeButton] = useState(false);
   const [hoverIndex, setHoverIndex] = useState(null);
 
-  const handleMouseEnterLike = (index) => {
-    setHoverIndex(index);
-  };
-
-  const handleMouseLeaveLike = () => {
-    setHoverIndex(null);
-  };
-
   useEffect(() => {
     setWebsiteTypeLike(likeType);
   }, [likeType]);
@@ -113,7 +105,7 @@ function LikeButton({ article, user, addLike }) {
         onMouseEnter={handleMouseEnter}
       >
         <button
-        style={{ background: "none" }}
+          style={{ background: "none" }}
           disabled={disableLikeButton}
           onClick={
             likeType === "none"
@@ -139,10 +131,6 @@ function LikeButton({ article, user, addLike }) {
           <LikeTypesContainer>
             {likeTypesArray.map((likeType, i) => (
               <ListedIcons
-                onMouseEnter={() => handleMouseEnterLike(i)}
-                onMouseDown={handleMouseLeaveLike}
-                isActive={hoverIndex === i}
-                isHovered={hoverIndex !== i && hoverIndex !== null}
                 key={i}
                 onClick={() => handleLike(likeType.type)}
                 style={{ animationDelay: `${i * 0.05}s` }}
@@ -207,14 +195,11 @@ const likeAnimation = keyframes`
 const ListedIcons = styled.div`
   animation: ${likeAnimation} 0.5s;
   button {
-    scale: ${({ isActive, isHovered }) =>
-      isActive ? 1.2 : isHovered ? 0.9 : 1};
     cursor: pointer;
     background-color: transparent;
     border: none;
     &:hover {
       background-color: none;
-      scale: 1.2;
     }
   }
 

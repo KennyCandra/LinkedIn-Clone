@@ -84,3 +84,10 @@ export const getNotifications = (payload) => {
     payload : payload
   }
 }
+
+export const openedNotification = (payload) => {
+  return {
+    type : actions.OPENED_NOTIFICAIONS,
+    payload : payload
+  }
+}

@@ -4,6 +4,8 @@ import LikeButton from "./LikeButton";
 import styled from "styled-components";
 import ReactPlayer from "react-player";
 import Comments from "./Comments";
+import { handleDelete } from "../Redux/actions";
+import { connect } from "react-redux";
 
 function Article({
   article,
@@ -46,7 +48,7 @@ function Article({
       )}
       {articleActionButton[article.id] && (
         <ArticleActionButonsContainer>
-          <ActionButton onClick={() => handleDelete(article.id)}>
+          <ActionButton onClick={() => handleDelete(article)}>
             <img src="images/close-icon.svg" alt="" />
             Delete Post
           </ActionButton>
@@ -142,7 +144,14 @@ function Article({
   );
 }
 
-export default Article;
+const mapDispatchToProps = (dispatch) => {
+  return {
+    handleDelete: (payload) => dispatch(handleDelete(payload)),
+  };
+};
+
+const connectedApp = connect(null, mapDispatchToProps)(Article);
+export default connectedApp;
 
 const ArticleContainer = styled.div`
   padding: 0;

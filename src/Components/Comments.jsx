@@ -68,8 +68,8 @@ function Comments(props) {
           </SubmitButton>
         </AddComment>
         {props.article.comments.length > 0 &&
-          props.article.comments.map((comment) => (
-            <Content>
+          props.article.comments.map((comment , index) => (
+            <Content key={index}>
               <UserImage>
                 <img src={comment.Image} alt="" />
               </UserImage>
@@ -105,7 +105,6 @@ const Container = styled.div`
   gap: 1rem;
   padding: 1rem;
   flex-direction: column;
-  
   input {
     border: 1px solid grey;
 

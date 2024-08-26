@@ -1,13 +1,23 @@
 import { connect } from "react-redux";
-import styled from "styled-components";
-import { signOutAPI } from "../Redux/actions";
-import { useNavigate } from "react-router-dom";
+import styled, { keyframes } from "styled-components";
+import {
+  getNotificationsAPI,
+  openedNotification,
+  signOutAPI,
+} from "../Redux/actions";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 
 function Header(props) {
   const [signOut, setSignOut] = useState(false);
   const navigate = useNavigate();
   const buttonRef = useRef(null);
+  const location = useLocation();
+  const [notificationArr, setNotificationArr] = useState([]);
+
+  useEffect(() => {
+    props.getNotificationsAPI(props.user.uid);
+  }, [props.user]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -40,37 +50,76 @@ function Header(props) {
           </Search>
         </LeftSideContainer>
         <NavListWrap>
-          <NavList>
+          <NavList className={location.pathname === "/home" ? "active" : null}>
             <button onClick={() => navigate("/home")}>
               <img src="/images/nav-home.svg" alt="Home" />
               <span>Home</span>
             </button>
           </NavList>
-          <NavList>
+          <NavList
+            className={location.pathname === "/nothing" ? "active" : null}
+          >
             <button>
               <img src="/images/nav-network.svg" alt="Home" />
               <span>My NetWork</span>
             </button>
           </NavList>
-          <NavList>
+          <NavList
+            className={location.pathname === "/nothing" ? "active" : null}
+          >
             <button>
               <img src="/images/nav-jobs.svg" alt="Home" />
               <span>Jobs</span>
             </button>
           </NavList>
-          <NavList>
+          <NavList
+            className={location.pathname === "/nothing" ? "active" : null}
+          >
             <button>
               <img src="/images/nav-messaging.svg" alt="Home" />
               <span>Messaging</span>
             </button>
           </NavList>
-          <NavList>
+          <NavList
+            className={location.pathname === "/notifications" ? "active" : null}
+          >
             <button onClick={() => navigate("/notifications")}>
-              <img src="/images/nav-notifications.svg" alt="Home" />
+              <img
+                src="/images/nav-notifications.svg"
+                alt="Home"
+                style={{
+                  transform:
+                    location.pathname === "/notifications" && "rotate(45deg)",
+                }}
+              />
               <span>notifications</span>
+              {notificationArr.length !== 0 && (
+                <div
+                  style={{
+                    position: "absolute",
+                    width: "15px",
+                    height: "15px",
+                    borderRadius: "50%",
+                    backgroundColor: "red",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    fontSize: "10px",
+                    color: "white",
+                    top: "0",
+                    right: "30%",
+                  }}
+                >
+                  <span style={{ color: "white", fontSize: "10px" }}>
+                    {notificationArr.length}
+                  </span>
+                </div>
+              )}
             </button>
           </NavList>
-          <NavList>
+          <NavList
+            className={location.pathname === "/nothing" ? "active" : null}
+          >
             <button onClick={() => setSignOut(!signOut)} ref={buttonRef}>
               {props.user && props.user.photoURL ? (
                 <img src={props.user.photoURL} alt="User" className="user" />
@@ -193,6 +242,15 @@ const Navigation = styled.nav`
   }
 `;
 
+const appear = keyframes`
+0% {
+  transform : scaleX(0);
+}
+100% {
+  transform : scaleX(1);
+}
+`;
+
 const NavListWrap = styled.ul`
   display: flex;
   flex-wrap: nowrap;
@@ -205,17 +263,17 @@ const NavListWrap = styled.ul`
       bottom: 0;
       left: 0;
       position: absolute;
-      transition: transform 0.2s ease-in-out;
+      animation : ${appear} 0.2s ease-in-out ;
       width: 100%;
       border-color: rgba(0, 0, 0, 0.9);
     }
-
 `;
 
 const NavList = styled.li`
   display: flex;
   align-items: center;
   cursor: pointer;
+  position: relative;
   button {
     align-items: center;
     background: none;
@@ -285,6 +343,7 @@ const SignOut = styled.div`
 
 const mapStateToProps = (state) => {
   return {
+    notifications: state.notificationState.notifications,
     user: state.userState.user,
   };
 };
@@ -292,6 +351,8 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     signOut: () => dispatch(signOutAPI()),
+    getNotificationsAPI: () => dispatch(getNotificationsAPI()),
+    openedNotification: (payload) => dispatch(openedNotification(payload)),
   };
 };
 

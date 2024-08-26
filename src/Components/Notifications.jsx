@@ -7,19 +7,22 @@ import { useNavigate } from "react-router-dom";
 function Notifications(props) {
   const [button, setButton] = useState("all");
   const [className, setClassName] = useState("active");
-  const [notificationArr, setNotificationArr] = useState([]);
-
-  useEffect(() => {
-    props.checkUser();
-  }, []);
-
-  useEffect(() => {
-    props.getNotificationsAPI()
-    setNotificationArr(props.notifications.filter((notification) => notification.uid === props.user.uid));
-    console.log(notificationArr)
-  }, [props.notification]);
-
+  const [newNotificationArr, setNewNotificationArr] = useState(
+    props.notifications
+  );
   const navigate = useNavigate();
+
+  useEffect(() => {
+    props.getNotificationsAPI(props.user.uid);
+  }, [props.notifications]);
+
+  useEffect(() => {
+    setNewNotificationArr(
+      props.notifications.filter(
+        (notification) => notification.uid === props.user.uid
+      )
+    );
+  }, [props.notifications]);
 
   useEffect(() => {
     !props.user ? navigate("/home") : null;
@@ -56,29 +59,28 @@ function Notifications(props) {
         >
           My Posts
         </button>
-        <button
-          className={className === "mention" ? "active" : null}
-          onClick={() => handleClick("mention")}
-        >
+        <button className={className === "mention" ? "active" : null}>
           Mention
         </button>
       </ButtonsContainer>
       <NotificationsContainer>
-        {props.notifications.length === 0 && (
-          <h1>No Notifications</h1>
-        )}
-        {props.notifications.map((notification, index) => (
-          props.user.uid === notification.uid && (
+        {newNotificationArr.length === 0 && <h1>No Notifications</h1>}
+        {newNotificationArr.length !== 0 &&
+          newNotificationArr.map((notification, index) => (
             <NotificationsDiv key={index}>
-              <NotificationImage src={notification.Image} alt={notification.name} />
+              <NotificationImage
+                src={notification.Image}
+                alt={notification.name}
+              />
               <NotificationInfo>
                 <NotificationUserName>{notification.name}</NotificationUserName>
-                <NotificationAction>{notification.action} on your post:</NotificationAction>
+                <NotificationAction>
+                  {notification.action} on your post:
+                </NotificationAction>
                 <NotificationText>{notification.description}</NotificationText>
               </NotificationInfo>
             </NotificationsDiv>
-          )
-        ))}
+          ))}
       </NotificationsContainer>
     </Container>
   );
@@ -129,6 +131,8 @@ const NotificationsContainer = styled.div`
 const NotificationsDiv = styled.div`
   display: flex;
   border: 0.5px solid grey;
+  align-items: flex-end;
+  padding-bottom: 10px;
 
   &:first-child {
     border-top: 0.5px solid grey;
@@ -181,7 +185,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     checkUser: () => dispatch(checkLocalStorage()),
-    getNotificationsAPI: () => dispatch(getNotificationsAPI()),
+    getNotificationsAPI: (uid) => dispatch(getNotificationsAPI(uid)),
   };
 };
 

@@ -67,7 +67,6 @@ export const signOutAPI = () => {
   };
 };
 
-
 const uploadImage = async (image) => {
   const storageRef = ref(storage, `images/${image.name}`);
   const uploadRef = await uploadBytesResumable(storageRef, image);
@@ -107,7 +106,7 @@ export const postArticleAPI = (payload) => {
         description: payload.description,
         id: payload.id,
         likes: [],
-        uid: payload.user.uid
+        uid: payload.user.uid,
       };
 
       const docRef = await createArticleDocument(articleData);
@@ -134,14 +133,13 @@ export const getArticlesApi = () => {
   };
 };
 
-export const getNotificationsAPI = () => {
+export const getNotificationsAPI = (uid) => {
   return (dispatch) => {
     let payload;
     const collRef = collection(db, "notifications");
     // const orderedRef = query(collRef, orderBy("actor.date", "desc"));
     onSnapshot(collRef, (snapshot) => {
       payload = snapshot.docs.map((doc) => doc.data());
-      console.log(payload)
       dispatch(actions.getNotifications(payload));
     });
   };
@@ -179,7 +177,7 @@ export const addCommentAPI = (payload) => {
         action: payload.action,
         description: payload.description,
         id: payload.id,
-        seen : false
+        seen: false,
       };
       await updateDoc(docToUpdate.ref, {
         comments: arrayUnion({
@@ -190,7 +188,10 @@ export const addCommentAPI = (payload) => {
           likes: [],
         }),
       });
-      const notRef = await postOwner !== payload.name ? createNotificationDocument(commentNotification) : null
+      const notRef =
+        (await postOwner) !== payload.name
+          ? createNotificationDocument(commentNotification)
+          : null;
 
       dispatch(actions.addComment(payload));
     } catch (error) {
@@ -294,6 +295,21 @@ export const addLike = (article, payload) => {
       dispatch(actions.addLike(article, { ...payload, likes: newlikes }));
     } catch (error) {
       console.error("Error adding like: ", error);
+    }
+  };
+};
+
+export const openedNotification = (payload) => {
+  return async (dispatch) => {
+    try {
+      const notRef = collection(db, "notifications");
+      const q = query(notRef, where("uid", "==", payload.uid));
+      const querySnapshot = await getDocs(q);
+      const docToUpdate = querySnapshot.docs[0];
+      console.log(docToUpdate);
+      dispatch(actions.openedNotification(payload));
+    } catch (error) {
+      console.error(error);
     }
   };
 };
