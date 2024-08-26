@@ -1,38 +1,38 @@
-import React, {useState} from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import styled from "styled-components";
-import { editArticle } from "../Redux/actions/actions";
 import { editArticleAPI } from "../Redux/actions";
 
 function EditPostModal({
   showEditModal,
   setShowEditModal,
-  handleEditPostModalClick,
   user,
   article,
-  editArticleAPI
+  editArticleAPI,
+  postDescription,
+  handleOptimisticChange,
+  handleRevertChange
 }) {
-  const [textArea, setTextArea] = useState(article.description);
+  const [textArea, setTextArea] = useState(postDescription);
   const [assetArea, setAssetArea] = useState("");
   const [image, setImage] = useState("");
   const [videoLink, setVideoLink] = useState("");
 
-  const reset = (e) => {
-    setTextArea("");
-    setAssetArea("");
-    setImage("");
-    setVideoLink("");
-    props.handleClick(e);
-  };
-
-  const handleEditPostClick = (e) => {
+  const handleEditPostClick = async (e) => {
     e.preventDefault();
     if (e.target !== e.currentTarget) {
       return;
     }
-    editArticleAPI(article, textArea);
-    reset(e);
+
     setShowEditModal(false);
+    try {
+      await editArticleAPI(article, textArea);
+      handleOptimisticChange(textArea);
+      setShowEditModal(false);
+    } catch (error) {
+      console.log(error);
+      handleRevertChange();
+    }
   };
 
   const switchAssetArea = (area) => {
@@ -51,7 +51,7 @@ function EditPostModal({
   };
 
   return (
-    {showEditModal } && (
+    { showEditModal } && (
       <Container>
         <Content>
           <Header>
@@ -290,8 +290,7 @@ const PostButton = styled.button`
   min-with: 60px;
   padding-left: 16px;
   padding-right: 16px;
-  background: ${(props) =>
-    props.disabled ? "rgb(235,235,235)" : "#0a66c2"};
+  background: ${(props) => (props.disabled ? "rgb(235,235,235)" : "#0a66c2")};
   color: ${(props) => (props.disabled ? "rgb(0,0,0,0.25)" : "white")};
   cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
   font-weight: 500;

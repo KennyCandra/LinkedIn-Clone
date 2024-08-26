@@ -56,6 +56,15 @@ function LikeButton({ article, user, addLike }) {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [websiteTypeLike, setWebsiteTypeLike] = useState(likeType || "none");
   const [disableLikeButton, setDisableLikeButton] = useState(false);
+  const [hoverIndex, setHoverIndex] = useState(null);
+
+  const handleMouseEnterLike = (index) => {
+    setHoverIndex(index);
+  };
+
+  const handleMouseLeaveLike = () => {
+    setHoverIndex(null);
+  };
 
   useEffect(() => {
     setWebsiteTypeLike(likeType);
@@ -102,30 +111,38 @@ function LikeButton({ article, user, addLike }) {
       <LikeButtonAction
         onMouseLeave={handleMouseDown}
         onMouseEnter={handleMouseEnter}
-        disabled={disableLikeButton}
-        onClick={
-          likeType === "none"
-            ? () => handleLike("Like")
-            : () => handleLike(likeTypes[websiteTypeLike].type)
-        }
       >
-        <img
-          style={{ filter: likeTypes[websiteTypeLike].filter }}
-          src={likeTypes[websiteTypeLike].icon}
-          alt="Like"
-        />
-        <span
-          style={{
-            color: likeTypes[websiteTypeLike].spanColor,
-            transition: "transform 0.2s ease-in-out",
-          }}
+        <button
+        style={{ background: "none" }}
+          disabled={disableLikeButton}
+          onClick={
+            likeType === "none"
+              ? () => handleLike("Like")
+              : () => handleLike(likeTypes[websiteTypeLike].type)
+          }
         >
-          {websiteTypeLike === "none" ? "Like" : websiteTypeLike}
-        </span>
+          <img
+            style={{ filter: likeTypes[websiteTypeLike].filter }}
+            src={likeTypes[websiteTypeLike].icon}
+            alt="Like"
+          />
+          <span
+            style={{
+              color: likeTypes[websiteTypeLike].spanColor,
+              transition: "transform 0.2s ease-in-out",
+            }}
+          >
+            {websiteTypeLike === "none" ? "Like" : websiteTypeLike}
+          </span>
+        </button>
         {isMenuVisible && (
           <LikeTypesContainer>
             {likeTypesArray.map((likeType, i) => (
               <ListedIcons
+                onMouseEnter={() => handleMouseEnterLike(i)}
+                onMouseDown={handleMouseLeaveLike}
+                isActive={hoverIndex === i}
+                isHovered={hoverIndex !== i && hoverIndex !== null}
                 key={i}
                 onClick={() => handleLike(likeType.type)}
                 style={{ animationDelay: `${i * 0.05}s` }}
@@ -161,7 +178,7 @@ const LikeButtonAction = styled.button`
 const LikeTypesContainer = styled.div`
   position: absolute;
   display: flex;
-  width: 150%;
+  width: 240px;
   height: 2.3rem;
   justify-content: space-evenly;
   align-items: center;
@@ -190,10 +207,14 @@ const likeAnimation = keyframes`
 const ListedIcons = styled.div`
   animation: ${likeAnimation} 0.5s;
   button {
+    scale: ${({ isActive, isHovered }) =>
+      isActive ? 1.2 : isHovered ? 0.9 : 1};
+    cursor: pointer;
     background-color: transparent;
     border: none;
     &:hover {
       background-color: none;
+      scale: 1.2;
     }
   }
 
