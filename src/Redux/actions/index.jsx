@@ -143,7 +143,6 @@ export const getNotificationsAPI = (uid) => {
       onSnapshot(notRef, (snapshot) => {
         payload = snapshot.docs.map((doc) => doc.data()).filter((doc) => doc.uid === uid);
         dispatch(actions.getNotifications(payload));
-        console.log("Done!");
       });
     } catch (error) {
       console.error(error);

@@ -12,24 +12,21 @@ function Notifications(props) {
   const [button, setButton] = useState("all");
   const [className, setClassName] = useState("active");
   const navigate = useNavigate();
-  const [newNotificationArr, setNewNotificationArr] = useState([]);
-
 
   useEffect(() => {
-    const fetchData = async () => {
-      await props.getNotificationsAPI(props.user.uid);
-      setNewNotificationArr(props.notifications);
+    const fetchAndUpdateData = async () => {
+      if (props.user) {
+        await props.getNotificationsAPI(props.user.uid);
+        if (props.notifications && props.notifications.length > 0) {
+          await props.openNotification(props.user);
+        }
+      } else {
+        navigate("/home");
+      }
     };
-    const updateData = async () => {
-      await props.openNotification(props.user);
-    };
-    updateData();
-    fetchData();
-  }, []);
 
-  useEffect(() => {
-    !props.user ? navigate("/home") : null;
-  }, []);
+    fetchAndUpdateData();
+  }, [props.user]);
 
   const handleClick = (item) => {
     setButton(item);
@@ -67,11 +64,11 @@ function Notifications(props) {
         </button>
       </ButtonsContainer>
       <NotificationsContainer>
-        {newNotificationArr ? (
-          newNotificationArr.length === 0 ? (
+        {props.notifications ? (
+          props.notifications.length === 0 ? (
             <h1>No Notifications</h1>
           ) : (
-            newNotificationArr.map((notification, index) => (
+            props.notifications.map((notification, index) => (
               <NotificationsDiv key={index}>
                 <NotificationImage
                   src={notification.Image}
