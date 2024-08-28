@@ -1,10 +1,6 @@
 import { connect } from "react-redux";
 import styled, { keyframes } from "styled-components";
-import {
-  getNotificationsAPI,
-  openedNotification,
-  signOutAPI,
-} from "../Redux/actions";
+import { getNotificationsAPI, signOutAPI } from "../Redux/actions";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 
@@ -13,20 +9,20 @@ function Header(props) {
   const navigate = useNavigate();
   const buttonRef = useRef(null);
   const location = useLocation();
-  const [notificationArr, setNotificationArr] = useState([]);
+  const [newArr, setNewArr] = useState([]);
 
   useEffect(() => {
     props.getNotificationsAPI(props.user.uid);
-  }, [props.notifications]);
+  }, []);
 
   useEffect(() => {
-    setNotificationArr(
-      props.notifications.filter(
-        (notification) => notification.uid === props.user.uid && !notification.seen
-      )
-    );
+    if (props.notifications.length > 0) {
+      const filetredArr = props.notifications.filter(
+        (notification) => notification.seen === false
+      );
+      setNewArr(filetredArr);
+    }
   }, [props.notifications]);
-
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -40,6 +36,13 @@ function Header(props) {
       document.removeEventListener("click", handleClickOutside);
     };
   }, []);
+
+  const handleNotificationButtonClick = () => {
+    if (location.pathname !== "/notifications") {
+      navigate("/notifications");
+    }
+  };
+
   return (
     <Container>
       <Navigation>
@@ -92,17 +95,18 @@ function Header(props) {
           <NavList
             className={location.pathname === "/notifications" ? "active" : null}
           >
-            <button onClick={() => navigate("/notifications")}>
+            <button onClick={handleNotificationButtonClick}>
               <img
                 src="/images/nav-notifications.svg"
                 alt="Home"
                 style={{
                   transform:
                     location.pathname === "/notifications" && "rotate(45deg)",
+                  transition: "transform 0.3s ease-in-out",
                 }}
               />
               <span>notifications</span>
-              {notificationArr.length !== 0 && (
+              {newArr.length > 0 && (
                 <div
                   style={{
                     position: "absolute",
@@ -120,7 +124,7 @@ function Header(props) {
                   }}
                 >
                   <p style={{ color: "white", fontSize: "10px" }}>
-                    {notificationArr.length}
+                    {newArr.length}
                   </p>
                 </div>
               )}

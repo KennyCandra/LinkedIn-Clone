@@ -7,6 +7,7 @@ import {
   handleDelete,
   editArticleAPI,
   addLike,
+  getNotificationsAPI
 } from "../Redux/actions";
 import Article from "./Article";
 import EditModal from "./EditModal";
@@ -16,6 +17,11 @@ function Main(props) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [articleActionButton, setArticleActionButton] = useState({});
 
+  useEffect(() => {
+    props.getNotificationsAPI(props.user.uid);
+  },[])
+
+  
   const toggleActionButton = (articleId) => {
     setArticleActionButton((prev) => ({
       ...prev,
@@ -30,7 +36,6 @@ function Main(props) {
   const handleEditPostModalClick = () => {
     setShowEditModal(!showEditModal);
   };
-
 
   useEffect(() => {
     props.getArticles();
@@ -106,6 +111,7 @@ const mapStateToProps = (state) => {
     loading: state.articleState.loading,
     user: state.userState.user,
     articles: state.articleState.articles,
+    notifications: state.notificationState.notifications
   };
 };
 
@@ -116,6 +122,7 @@ const mapDispatchToProps = (dispatch) => {
     editArticle: (payload, newPost) =>
       dispatch(editArticleAPI(payload, newPost)),
     addLike: (article, payload) => dispatch(addLike(article, payload)),
+    getNotificationsAPI: (payload) => dispatch(getNotificationsAPI(payload))
   };
 };
 const Container = styled.div`

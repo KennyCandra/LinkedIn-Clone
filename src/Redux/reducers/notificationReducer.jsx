@@ -18,12 +18,12 @@ export const notificationsReducer = (state = initialState, action) => {
         ...state,
         notifications: action.payload,
       };
-      
-      case type.OPENED_NOTIFICAIONS: 
+
+    case type.OPENED_NOTIFICAIONS:
       return {
         ...state,
-        notifications: action.payload
-      }
+        notifications: action.payload,
+      };
     default:
       return state;
   }

@@ -16,6 +16,7 @@ import {
   arrayUnion,
   arrayRemove,
   getDoc,
+  runTransaction,
 } from "firebase/firestore";
 
 export const checkLocalStorage = () => {
@@ -134,14 +135,19 @@ export const getArticlesApi = () => {
 };
 
 export const getNotificationsAPI = (uid) => {
-  return (dispatch) => {
-    let payload;
-    const collRef = collection(db, "notifications");
-    // const orderedRef = query(collRef, orderBy("actor.date", "desc"));
-    onSnapshot(collRef, (snapshot) => {
-      payload = snapshot.docs.map((doc) => doc.data());
-      dispatch(actions.getNotifications(payload));
-    });
+  return async (dispatch) => {
+    try {
+      let payload;
+      const notRef = collection(db, "notifications");
+      // const orderedRef = query(collRef, orderBy("actor.date", "desc"));
+      onSnapshot(notRef, (snapshot) => {
+        payload = snapshot.docs.map((doc) => doc.data()).filter((doc) => doc.uid === uid);
+        dispatch(actions.getNotifications(payload));
+        console.log("Done!");
+      });
+    } catch (error) {
+      console.error(error);
+    }
   };
 };
 
@@ -298,14 +304,19 @@ export const addLike = (article, payload) => {
   };
 };
 
-export const openedNotification = (payload) => {
+export const openNotification = (payload) => {
   return async (dispatch) => {
     try {
-      const notRef = collection(db, "notifications");
-      const q = query(notRef, where("uid", "==", payload.uid));
-      const querySnapshot = await getDocs(q);
-      const docToUpdate = querySnapshot.docs[0];
-      console.log(docToUpdate);
+      runTransaction(db, async (transaction) => {
+        const notRef = collection(db, "notifications");
+        const q = query(notRef, where("uid", "==", payload.uid));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+          transaction.update(doc.ref, {
+            seen: true,
+          });
+        });
+      })
       dispatch(actions.openedNotification(payload));
     } catch (error) {
       console.error(error);

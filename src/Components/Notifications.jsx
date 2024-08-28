@@ -1,27 +1,30 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { connect } from "react-redux";
-import { checkLocalStorage, getNotificationsAPI } from "../Redux/actions";
+import {
+  checkLocalStorage,
+  getNotificationsAPI,
+  openNotification,
+} from "../Redux/actions";
 import { useNavigate } from "react-router-dom";
 
 function Notifications(props) {
   const [button, setButton] = useState("all");
   const [className, setClassName] = useState("active");
-  const [newNotificationArr, setNewNotificationArr] = useState(
-    props.notifications
-  );
   const navigate = useNavigate();
+  const [newNotificationArr, setNewNotificationArr] = useState([]);
+
 
   useEffect(() => {
-    props.getNotificationsAPI(props.user.uid);
-  }, []);
-
-  useEffect(() => {
-    setNewNotificationArr(
-      props.notifications.filter(
-        (notification) => notification.uid === props.user.uid
-      )
-    );
+    const fetchData = async () => {
+      await props.getNotificationsAPI(props.user.uid);
+      setNewNotificationArr(props.notifications);
+    };
+    const updateData = async () => {
+      await props.openNotification(props.user);
+    };
+    updateData();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -64,23 +67,31 @@ function Notifications(props) {
         </button>
       </ButtonsContainer>
       <NotificationsContainer>
-        {newNotificationArr.length === 0 && <h1>No Notifications</h1>}
-        {newNotificationArr.length !== 0 &&
-          newNotificationArr.map((notification, index) => (
-            <NotificationsDiv key={index}>
-              <NotificationImage
-                src={notification.Image}
-                alt={notification.name}
-              />
-              <NotificationInfo>
-                <NotificationUserName>{notification.name}</NotificationUserName>
-                <NotificationAction>
-                  {notification.action} on your post:
-                </NotificationAction>
-                <NotificationText>{notification.description}</NotificationText>
-              </NotificationInfo>
-            </NotificationsDiv>
-          ))}
+        {newNotificationArr ? (
+          newNotificationArr.length === 0 ? (
+            <h1>No Notifications</h1>
+          ) : (
+            newNotificationArr.map((notification, index) => (
+              <NotificationsDiv key={index}>
+                <NotificationImage
+                  src={notification.Image}
+                  alt={notification.name}
+                />
+                <NotificationInfo>
+                  <NotificationUserName>
+                    {notification.name}
+                  </NotificationUserName>
+                  <NotificationAction>
+                    {notification.action} on your post:
+                  </NotificationAction>
+                  <NotificationText>
+                    {notification.description}
+                  </NotificationText>
+                </NotificationInfo>
+              </NotificationsDiv>
+            ))
+          )
+        ) : null}
       </NotificationsContainer>
     </Container>
   );
@@ -186,6 +197,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     checkUser: () => dispatch(checkLocalStorage()),
     getNotificationsAPI: (uid) => dispatch(getNotificationsAPI(uid)),
+    openNotification: (payload) => dispatch(openNotification(payload)),
   };
 };
 
