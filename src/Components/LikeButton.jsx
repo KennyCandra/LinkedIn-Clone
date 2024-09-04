@@ -56,7 +56,6 @@ function LikeButton({ article, user, addLike }) {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [websiteTypeLike, setWebsiteTypeLike] = useState(likeType || "none");
   const [disableLikeButton, setDisableLikeButton] = useState(false);
-  const [hoverIndex, setHoverIndex] = useState(null);
 
   useEffect(() => {
     setWebsiteTypeLike(likeType);
@@ -77,12 +76,14 @@ function LikeButton({ article, user, addLike }) {
     setIsMenuVisible(false);
 
     const payload = {
-      Timestamp: Timestamp.now(),
+      user : user,
+      action : 'like',
+      article: article,
+      timestamp: Timestamp.now(),
       id: Math.random().toString(36).slice(2),
-      userName: user.displayName,
-      email: user.email,
       type: likeTypeAPI,
     };
+
     try {
       await addLike(article, payload);
     } catch (error) {

@@ -11,6 +11,7 @@ import RequireAuth from "./Pages/RequireAuth";
 import NotificationPage from "./Pages/NotificationPage";
 
 function App(props) {
+  
   useEffect(() => {
     props.getUserAuth();
   }, [props]);

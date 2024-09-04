@@ -15,8 +15,6 @@ import {
   updateDoc,
   arrayUnion,
   arrayRemove,
-  getDoc,
-  runTransaction,
 } from "firebase/firestore";
 
 export const checkLocalStorage = () => {
@@ -84,6 +82,11 @@ const createNotificationDocument = async (payload) => {
   return addDoc(collRef, payload);
 };
 
+const deleteNotificationDocument = async (payload) => {
+  const notRef = collection(db, "notifications");
+  return deleteDoc(notRef, payload);
+};
+
 export const postArticleAPI = (payload) => {
   return async (dispatch) => {
     try {
@@ -139,9 +142,11 @@ export const getNotificationsAPI = (uid) => {
     try {
       let payload;
       const notRef = collection(db, "notifications");
-      // const orderedRef = query(collRef, orderBy("actor.date", "desc"));
-      onSnapshot(notRef, (snapshot) => {
-        payload = snapshot.docs.map((doc) => doc.data()).filter((doc) => doc.uid === uid);
+      const orderedRef = query(notRef, orderBy("date", "desc"));
+      onSnapshot(orderedRef, (snapshot) => {
+        payload = snapshot.docs
+          .map((doc) => doc.data())
+          .filter((doc) => doc.uid === uid);
         dispatch(actions.getNotifications(payload));
       });
     } catch (error) {
@@ -169,33 +174,36 @@ export const addCommentAPI = (payload) => {
   return async (dispatch) => {
     try {
       const articleRef = collection(db, "articles");
-      const q = query(articleRef, where("id", "==", payload.articleId));
+      const q = query(articleRef, where("id", "==", payload.article.id));
       const querySnapshot = await getDocs(q);
       const docToUpdate = querySnapshot.docs[0];
-      const postOwner = payload.article.actor.title;
-      const commentNotification = {
-        actorName: payload.article.actor.title,
-        name: payload.name,
-        uid: payload.uid,
-        Image: payload.Image,
-        action: payload.action,
-        description: payload.description,
+      const comment = {
+        name: payload.user.displayName,
+        Image: payload.user.photoURL,
         id: payload.id,
+        description: payload.description,
+        likes: [],
+      };
+      const notificationData = {
+        name: payload.user.displayName,
+        Image: payload.user.photoURL,
+        action: payload.action,
+        uid: payload.article.uid,
+        description: payload.article.description,
+        actorName: payload.article.actor.title,
+        postOwner: payload.article.actor.title,
+        id: payload.id,
+        date: payload.timestamp,
         seen: false,
       };
+
       await updateDoc(docToUpdate.ref, {
-        comments: arrayUnion({
-          description: payload.description,
-          Image: payload.Image,
-          name: payload.name,
-          id: payload.id,
-          likes: [],
-        }),
+        comments: arrayUnion(comment),
       });
-      const notRef =
-        (await postOwner) !== payload.name
-          ? createNotificationDocument(commentNotification)
-          : null;
+
+      (await notificationData.postOwner) !== payload.user.displayName
+        ? createNotificationDocument(notificationData)
+        : null;
 
       dispatch(actions.addComment(payload));
     } catch (error) {
@@ -272,30 +280,67 @@ export const addLike = (article, payload) => {
       const querySnapshot = await getDocs(q);
       const docToUpdate = querySnapshot.docs[0];
       const newlikes = docToUpdate.data().likes;
-      const findLike = newlikes.find((like) => like.email === payload.email);
-      const updatedLike = newlikes.map((like) =>
-        like.email === payload.email ? { ...like, type: payload.type } : like
+
+      const findLike = newlikes.find(
+        (like) => like.email === payload.user.email
       );
-      if (findLike === undefined) {
+
+      const likeObject = {
+        Timestamp: payload.timestamp,
+        id: payload.id,
+        userName: payload.user.displayName,
+        email: payload.user.email,
+        type: payload.type,
+      };
+
+      const notificationData = {
+        name: payload.user.displayName,
+        Image: payload.user.photoURL,
+        action: payload.action,
+        uid: payload.article.uid,
+        description: payload.article.description,
+        actorName: payload.article.actor.title,
+        postOwner: payload.article.actor.title,
+        id: payload.id,
+        date: payload.timestamp,
+        seen: false,
+      };
+
+      if (!findLike) {
         await updateDoc(docToUpdate.ref, {
-          likes: arrayUnion({
-            ...newlikes,
-            Timestamp: payload.Timestamp,
-            id: payload.id,
-            userName: payload.userName,
-            email: payload.email,
-            type: payload.type,
-          }),
+          likes: arrayUnion(likeObject),
         });
-      } else if (findLike !== undefined && findLike.type !== payload.type) {
+
+        if (notificationData.postOwner !== payload.user.displayName) {
+          await createNotificationDocument(notificationData);
+        }
+      } else if (findLike && findLike.type !== payload.type) {
+        const updatedLike = newlikes.map((like) =>
+          like.email === payload.user.email
+            ? { ...like, type: payload.type }
+            : like
+        );
         await updateDoc(docToUpdate.ref, {
           likes: updatedLike,
         });
-      } else if (findLike !== undefined && findLike.type === payload.type) {
+      } else if (findLike && findLike.type === payload.type) {
         await updateDoc(docToUpdate.ref, {
-          likes: arrayRemove({ ...findLike }),
+          likes: arrayRemove(findLike),
         });
+        const notRef = collection(db, "notifications");
+        const qDelete = query(
+          notRef,
+          where("name", "==", payload.user.displayName)
+        );
+        const newQ = query(qDelete, where("action", "==", "like"));
+        const newestQ = query(
+          newQ,
+          where("description", "==", payload.article.description)
+        );
+        const querySnapshotDelete = await getDocs(newestQ);
+        deleteDoc(querySnapshotDelete.docs[0].ref);
       }
+
       dispatch(actions.addLike(article, { ...payload, likes: newlikes }));
     } catch (error) {
       console.error("Error adding like: ", error);
@@ -303,19 +348,16 @@ export const addLike = (article, payload) => {
   };
 };
 
-export const openNotification = (payload) => {
+export const updateNotificationState = (payload) => {
   return async (dispatch) => {
     try {
-      runTransaction(db, async (transaction) => {
-        const notRef = collection(db, "notifications");
-        const q = query(notRef, where("uid", "==", payload.uid));
-        const querySnapshot = await getDocs(q);
-        querySnapshot.forEach((doc) => {
-          transaction.update(doc.ref, {
-            seen: true,
-          });
-        });
-      })
+      const notRef = collection(db, "notifications");
+      const q = query(notRef, where("id", "==", payload.id));
+      const querySnapshot = await getDocs(q);
+      const docToUpdate = querySnapshot.docs[0];
+      await updateDoc(docToUpdate.ref, {
+        seen: true,
+      });
       dispatch(actions.openedNotification(payload));
     } catch (error) {
       console.error(error);

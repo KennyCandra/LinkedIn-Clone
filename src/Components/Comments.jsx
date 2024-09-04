@@ -7,13 +7,14 @@ import {
 } from "../Redux/actions";
 import { useEffect, useRef, useState } from "react";
 import CommentEditor from "./CommentEditor";
+import { Timestamp } from "firebase/firestore";
 
 function Comments(props) {
   const [comment, setComment] = useState("");
   const inputRef = useRef();
 
   useEffect(() => {
-    if(props.setFoucsFunction) {
+    if (props.setFoucsFunction) {
       props.setFoucsFunction(() => {
         if (inputRef.current) {
           inputRef.current.focus();
@@ -25,15 +26,12 @@ function Comments(props) {
   const handleAddComment = () => {
     if (!comment) return;
     const payload = {
-      user : props.article.user,
+      user: props.user,
       action: "comment",
       article: props.article,
-      description: comment,
-      uid : props.article.uid,
-      Image: props.user.photoURL,
-      name: props.user.displayName,
-      articleId: props.article.id,
+      timestamp: Timestamp.now(),
       id: Math.random().toString(36).slice(2),
+      description: comment,
       likes: [],
     };
     props.addComment(payload);
@@ -63,12 +61,12 @@ function Comments(props) {
             ref={inputRef}
             onChange={handleChange}
           />
-          <SubmitButton type="submit" onClick={handleClick}>
-            Comment
-          </SubmitButton>
         </AddComment>
+        <SubmitButton type="submit" onClick={handleClick}>
+          Hello
+        </SubmitButton>
         {props.article.comments.length > 0 &&
-          props.article.comments.map((comment , index) => (
+          props.article.comments.map((comment, index) => (
             <Content key={index}>
               <UserImage>
                 <img src={comment.Image} alt="" />
@@ -111,7 +109,6 @@ const Container = styled.div`
     &:focus {
       border: 2px solid grey;
     }
-
   }
 `;
 
@@ -164,13 +161,13 @@ const Interactions = styled.div`
 `;
 
 const SubmitButton = styled.button`
-  position: absolute;
-  right: 1rem;
-  top: 0.8rem;
   border: none;
   background: transparent;
-  color: #958b7b;
+  width: 220px;
   cursor: pointer;
+  border-radius: 5px;
+  background-color: #0a66c2;
+  color: white;
 `;
 
 const mapDispatchToProps = (dispatch) => {

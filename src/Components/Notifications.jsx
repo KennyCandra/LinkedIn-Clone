@@ -4,29 +4,31 @@ import { connect } from "react-redux";
 import {
   checkLocalStorage,
   getNotificationsAPI,
-  openNotification,
+  updateNotificationState,
 } from "../Redux/actions";
 import { useNavigate } from "react-router-dom";
 
-function Notifications(props) {
+function Notifications({getNotificationsAPI, user, notifications, updateNotificationState}) {
   const [button, setButton] = useState("all");
   const [className, setClassName] = useState("active");
   const navigate = useNavigate();
+  const [notificationArr, setNotificationArr] = useState(notifications || []);
 
   useEffect(() => {
-    const fetchAndUpdateData = async () => {
-      if (props.user) {
-        await props.getNotificationsAPI(props.user.uid);
-        if (props.notifications && props.notifications.length > 0) {
-          await props.openNotification(props.user);
-        }
-      } else {
-        navigate("/home");
-      }
-    };
+    getNotificationsAPI(user.uid);
+  }, []);
 
-    fetchAndUpdateData();
-  }, [props.user]);
+  useEffect(() => {
+    for (let i = 0; i < notificationArr.length; i++) {
+      if (notificationArr[i].seen === false) {
+        updateNotificationState(notificationArr[i]);
+      }
+    }
+  }, [notifications]);
+
+  useEffect(() => {
+    !user ? navigate("/home") : null;
+  }, []);
 
   const handleClick = (item) => {
     setButton(item);
@@ -59,16 +61,17 @@ function Notifications(props) {
         >
           My Posts
         </button>
-        <button className={className === "mention" ? "active" : null}>
+        <button className={className === "mention" ? "active" : null}
+        onClick={() => handleClick("mention")}>
           Mention
         </button>
       </ButtonsContainer>
       <NotificationsContainer>
-        {props.notifications ? (
-          props.notifications.length === 0 ? (
+        {notificationArr ? (
+          notificationArr.length === 0 ? (
             <h1>No Notifications</h1>
           ) : (
-            props.notifications.map((notification, index) => (
+            notificationArr.map((notification, index) => (
               <NotificationsDiv key={index}>
                 <NotificationImage
                   src={notification.Image}
@@ -79,10 +82,10 @@ function Notifications(props) {
                     {notification.name}
                   </NotificationUserName>
                   <NotificationAction>
-                    {notification.action} on your post:
+                    {notification.action === "comment" ? 'commented on your post : ' : 'React on your post'}
                   </NotificationAction>
                   <NotificationText>
-                    {notification.description}
+                  {notification.action === 'comment' ? notification.description : null}
                   </NotificationText>
                 </NotificationInfo>
               </NotificationsDiv>
@@ -192,9 +195,9 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    checkUser: () => dispatch(checkLocalStorage()),
     getNotificationsAPI: (uid) => dispatch(getNotificationsAPI(uid)),
-    openNotification: (payload) => dispatch(openNotification(payload)),
+    updateNotificationState: (payload) =>
+      dispatch(updateNotificationState(payload)),
   };
 };
 
