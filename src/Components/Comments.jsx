@@ -54,17 +54,27 @@ function Comments(props) {
           <UserImage>
             <img src={props.user.photoURL} alt="" />
           </UserImage>
-          <input
-            type="text"
-            placeholder="Add a comment"
-            value={comment}
-            ref={inputRef}
-            onChange={handleChange}
-          />
+          <InputDiv>
+            <input
+              // input {
+              //   width: 100%;
+              //   height: 1.5rem;
+              //   border-radius: 25px;
+              //   outline: none;
+              //   padding: 0.5rem;
+              //   padding-right: 100px;
+              // }
+              type="text"
+              placeholder="Add a comment"
+              value={comment}
+              ref={inputRef}
+              onChange={handleChange}
+            />
+            {comment !== '' &&<SubmitButton type="submit" onClick={handleClick}>
+              Comment
+            </SubmitButton>}
+          </InputDiv>
         </AddComment>
-        <SubmitButton type="submit" onClick={handleClick}>
-          Hello
-        </SubmitButton>
         {props.article.comments.length > 0 &&
           props.article.comments.map((comment, index) => (
             <Content key={index}>
@@ -105,7 +115,6 @@ const Container = styled.div`
   flex-direction: column;
   input {
     border: 1px solid grey;
-
     &:focus {
       border: 2px solid grey;
     }
@@ -122,6 +131,12 @@ const AddComment = styled.div`
   display: flex;
   position: relative;
   gap: 1rem;
+`;
+
+const InputDiv = styled.div`
+display: flex;
+flex-direction: column;
+gap: 20px;
   input {
     width: 100%;
     height: 1.5rem;
@@ -163,11 +178,11 @@ const Interactions = styled.div`
 const SubmitButton = styled.button`
   border: none;
   background: transparent;
-  width: 220px;
   cursor: pointer;
   border-radius: 5px;
   background-color: #0a66c2;
   color: white;
+  max-width: 100px;
 `;
 
 const mapDispatchToProps = (dispatch) => {
