@@ -45,6 +45,8 @@ function Comments(props) {
 
   const handleChange = (e) => {
     setComment(e.target.value);
+    inputRef.current.style.height = `10px`;
+    inputRef.current.style.height = `${inputRef.current.scrollHeight}px`;
   };
 
   return (
@@ -55,24 +57,18 @@ function Comments(props) {
             <img src={props.user.photoURL} alt="" />
           </UserImage>
           <InputDiv>
-            <input
-              // input {
-              //   width: 100%;
-              //   height: 1.5rem;
-              //   border-radius: 25px;
-              //   outline: none;
-              //   padding: 0.5rem;
-              //   padding-right: 100px;
-              // }
+            <textarea
               type="text"
               placeholder="Add a comment"
               value={comment}
               ref={inputRef}
               onChange={handleChange}
             />
-            {comment !== '' &&<SubmitButton type="submit" onClick={handleClick}>
-              Comment
-            </SubmitButton>}
+            {comment !== "" && (
+              <SubmitButton type="submit" onClick={handleClick}>
+                Comment
+              </SubmitButton>
+            )}
           </InputDiv>
         </AddComment>
         {props.article.comments.length > 0 &&
@@ -129,21 +125,23 @@ const Content = styled.div`
 
 const AddComment = styled.div`
   display: flex;
-  position: relative;
   gap: 1rem;
+  overflow: hidden;
+  resize: none;
 `;
 
 const InputDiv = styled.div`
-display: flex;
-flex-direction: column;
-gap: 20px;
-  input {
-    width: 100%;
-    height: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex-shrink: 0;
+  flex-grow: 1;
+  textarea {
+    padding-inline: 10px;
+    padding-top: 20px;
     border-radius: 25px;
-    outline: none;
-    padding: 0.5rem;
-    padding-right: 100px;
+    width: 90%;
+    resize: none;
   }
 `;
 
