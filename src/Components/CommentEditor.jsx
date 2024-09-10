@@ -81,6 +81,7 @@ function CommentEditor({
           <p>{comment.description}</p>
         </CommentContainer>
       ) : (
+        /* fix the input area size */
         <>
           <input
             style={{
