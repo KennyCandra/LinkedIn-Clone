@@ -10,7 +10,6 @@ import {
   getNotificationsAPI
 } from "../Redux/actions";
 import Article from "./Article";
-import EditModal from "./EditModal";
 
 function Main(props) {
   const [show, setShow] = useState(false);

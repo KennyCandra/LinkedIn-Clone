@@ -86,7 +86,7 @@ function Article({
           <img src="/images/ellipis-icon.svg" alt="" />
         </button>
       </SharedActor>
-      <Description>{postDescription}</Description>
+      <Description>{article.description}</Description>
       <SharedImg>
         <a>
           {!article.sharedImg && article.video ? (

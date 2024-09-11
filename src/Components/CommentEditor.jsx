@@ -9,7 +9,7 @@ function CommentEditor({
   removeComment,
   user,
 }) {
-  const [newComment, setNewComment] = useState(description);
+  const [newComment, setNewComment] = useState('');
   const [editContent, setEditContent] = useState(false);
   const [commentActions, setCommentActions] = useState(false);
   const actionRef = useRef(null);
@@ -77,7 +77,6 @@ function CommentEditor({
           <p>{comment.description}</p>
         </CommentContainer>
       ) : (
-        /* fix the input area size */
         <>
           <input
             style={{
