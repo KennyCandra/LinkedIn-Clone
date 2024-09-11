@@ -9,7 +9,7 @@ function CommentEditor({
   removeComment,
   user,
 }) {
-  const [newComment, setNewComment] = useState(null);
+  const [newComment, setNewComment] = useState(description);
   const [editContent, setEditContent] = useState(false);
   const [commentActions, setCommentActions] = useState(false);
   const actionRef = useRef(null);
@@ -17,10 +17,6 @@ function CommentEditor({
   const handleChange = (e) => {
     setNewComment(e.target.value);
   };
-
-  useEffect(() => {
-    setNewComment(description);
-  }, [description]);
 
   const handleClick = () => {
     setEditContent(!editContent);
