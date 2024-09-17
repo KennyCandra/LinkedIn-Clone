@@ -71,8 +71,8 @@ function Notifications({getNotificationsAPI, user, notifications, updateNotifica
           notificationArr.length === 0 ? (
             <h1>No Notifications</h1>
           ) : (
-            notificationArr.map((notification, index) => (
-              <NotificationsDiv key={index}>
+            notificationArr.map((notification) => (
+              <NotificationsDiv onClick={() => navigate(`/posts/${notification.articleId}`)} key={notification.id}>
                 <NotificationImage
                   src={notification.Image}
                   alt={notification.name}

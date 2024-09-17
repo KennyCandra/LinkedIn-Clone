@@ -7,20 +7,21 @@ import {
   handleDelete,
   editArticleAPI,
   addLike,
-  getNotificationsAPI
+  getNotificationsAPI,
 } from "../Redux/actions";
 import Article from "./Article";
+import { Link, useNavigate } from "react-router-dom";
 
 function Main(props) {
   const [show, setShow] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [articleActionButton, setArticleActionButton] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     props.getNotificationsAPI(props.user.uid);
-  },[])
+  }, []);
 
-  
   const toggleActionButton = (articleId) => {
     setArticleActionButton((prev) => ({
       ...prev,
@@ -110,7 +111,7 @@ const mapStateToProps = (state) => {
     loading: state.articleState.loading,
     user: state.userState.user,
     articles: state.articleState.articles,
-    notifications: state.notificationState.notifications
+    notifications: state.notificationState.notifications,
   };
 };
 
@@ -121,7 +122,7 @@ const mapDispatchToProps = (dispatch) => {
     editArticle: (payload, newPost) =>
       dispatch(editArticleAPI(payload, newPost)),
     addLike: (article, payload) => dispatch(addLike(article, payload)),
-    getNotificationsAPI: (payload) => dispatch(getNotificationsAPI(payload))
+    getNotificationsAPI: (payload) => dispatch(getNotificationsAPI(payload)),
   };
 };
 const Container = styled.div`

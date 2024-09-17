@@ -12,7 +12,7 @@ function Header(props) {
   const [newArr, setNewArr] = useState([]);
 
   useEffect(() => {
-    props.getNotificationsAPI(props.user.uid);
+    props.getNotificationsAPI(props.user?.uid);
   }, []);
 
   useEffect(() => {

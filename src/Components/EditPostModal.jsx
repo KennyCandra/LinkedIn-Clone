@@ -10,8 +10,8 @@ function EditPostModal({
   article,
   editArticleAPI,
   postDescription,
-  handleOptimisticChange,
-  handleRevertChange
+  setPostDescription,
+  handleRevertChange,
 }) {
   const [textArea, setTextArea] = useState(postDescription);
   const [assetArea, setAssetArea] = useState("");
@@ -24,14 +24,12 @@ function EditPostModal({
       return;
     }
 
-    setShowEditModal(false);
-    try {
+    try{
+      await setPostDescription(textArea);
       await editArticleAPI(article, textArea);
-      handleOptimisticChange(textArea);
       setShowEditModal(false);
     } catch (error) {
-      console.log(error);
-      handleRevertChange();
+      console.error(error);
     }
   };
 

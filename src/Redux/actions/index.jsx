@@ -1,5 +1,5 @@
 import { auth, db, provider, storage } from "../../firebase";
-import { signInWithPopup } from "firebase/auth";
+import { getAuth, signInWithPopup } from "firebase/auth";
 import * as actions from "./actions";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import {
@@ -31,12 +31,31 @@ export const checkLocalStorage = () => {
   };
 };
 
+const createUserDocumentation = async (user) => {
+  const userRef = collection(db, "users");
+
+  const q = query(userRef, where("uid", "==", user.uid));
+  const querySnapshot = await getDocs(q);
+  const userDoc = querySnapshot.docs[0];
+  if (userDoc === undefined) {
+    const payload = {
+      uid: user.uid,
+      name: user.displayName,
+      email: user.email,
+      photoURL: user.photoURL,
+    };
+
+    return await addDoc(userRef, payload);
+  }
+};
+
 export const signInAPI = () => {
   return async (dispatch) => {
     try {
-      const result = signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      localStorage.setItem("user", JSON.stringify(payload.user));
+      localStorage.setItem("user", JSON.stringify(user));
+      await createUserDocumentation(user);
       dispatch(actions.setUser(user));
     } catch (error) {
       console.error(error);
@@ -99,6 +118,7 @@ export const postArticleAPI = (payload) => {
 
       const articleData = {
         actor: {
+          uid: payload.user.uid,
           description: payload.user.email,
           title: payload.user.displayName,
           date: payload.timestamp,
@@ -185,6 +205,7 @@ export const addCommentAPI = (payload) => {
         likes: [],
       };
       const notificationData = {
+        articleId: payload.article.id,
         name: payload.user.displayName,
         Image: payload.user.photoURL,
         action: payload.action,
@@ -294,6 +315,7 @@ export const addLike = (article, payload) => {
       };
 
       const notificationData = {
+        articleId: payload.article.id,
         name: payload.user.displayName,
         Image: payload.user.photoURL,
         action: payload.action,

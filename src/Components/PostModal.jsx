@@ -25,6 +25,7 @@ function PostModal(props) {
       return;
     }
     const payload = {
+      uid: props.user.uid,
       description: textArea,
       image: image,
       video: videoLink,

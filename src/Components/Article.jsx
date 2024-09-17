@@ -6,6 +6,7 @@ import ReactPlayer from "react-player";
 import Comments from "./Comments";
 import { handleDelete } from "../Redux/actions";
 import { connect } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 function Article({
   article,
@@ -20,14 +21,17 @@ function Article({
 }) {
   const commentFocusFunctions = useRef({});
   const [postDescription, setPostDescription] = useState("");
+  const navigate = useNavigate();
+
+  const navigateToProfile = (uid) => {
+    navigate(`/profile/${uid}`);
+  };
 
   useEffect(() => {
-    setPostDescription(article.description);
+    if (article.description !== postDescription) {
+      setPostDescription(article.description);
+    }
   }, []);
-
-  const handleOptimisticChange = (newDescription) => {
-    setPostDescription(newDescription);
-  };
 
   const handleRevertChange = () => {
     setPostDescription(article.description);
@@ -66,7 +70,6 @@ function Article({
               article={article}
               postDescription={postDescription}
               setPostDescription={setPostDescription}
-              handleOptimisticChange={handleOptimisticChange}
               handleRevertChange={handleRevertChange}
             />
           )}
@@ -74,10 +77,23 @@ function Article({
       )}
       <SharedActor>
         <a>
-          <img src={article.actor.image} alt="" />
+          <img
+            src={article.actor.image}
+            onClick={() => navigateToProfile(article.actor.uid)}
+            alt=""
+          />
           <div>
-            <span style={{ marginTop: "5px" }}>{article.actor.title}</span>
-            <span style={{ marginTop: "10px" }}>
+            <a
+              style={{
+                marginTop: "5px",
+                cursor: "pointer",
+                fontWeight: "bold",
+              }}
+              onClick={() => navigateToProfile(article.actor.uid)}
+            >
+              {article.actor.title}
+            </a>
+            <span style={{ marginTop: "10px" }} onClick={() => navigate(`/posts/${article.id}`)}>
               {article.actor.date.toDate().toLocaleDateString()}
             </span>
           </div>
@@ -86,7 +102,7 @@ function Article({
           <img src="/images/ellipis-icon.svg" alt="" />
         </button>
       </SharedActor>
-      <Description>{article.description}</Description>
+      <Description>{postDescription}</Description>
       <SharedImg>
         <a>
           {!article.sharedImg && article.video ? (
@@ -106,7 +122,7 @@ function Article({
                 width: "20px",
                 height: "20px",
               }}
-              src="https://static-exp1.licdn.com/sc/h/2uxqgankkcxm505qn812vqyss"
+              src="/images/LikeButton.svg"
               alt=""
             />
           </button>
@@ -178,6 +194,7 @@ const SharedActor = styled.div`
     text-decoration: none;
 
     img {
+      cursor: pointer;
       width: 48px;
       height: 48px;
       border-radius: 50%;
@@ -189,6 +206,12 @@ const SharedActor = styled.div`
       flex-basis: 0;
       margin-left: 8px;
       overflow: hidden;
+
+      a {
+        &:hover {
+          text-decoration: underline;
+        }
+      }
       span {
         text-align: left;
         &:first-child {
