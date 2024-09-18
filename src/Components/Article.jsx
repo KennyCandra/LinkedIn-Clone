@@ -50,7 +50,7 @@ function Article({
           <img src="images/three-dots-svgrepo-com.svg" />
         </ArticleActionButtons>
       )}
-      {articleActionButton[article.id] && (
+      {articleActionButton ? articleActionButton[article.id] && (
         <ArticleActionButonsContainer>
           <ActionButton onClick={() => handleDelete(article)}>
             <img src="images/close-icon.svg" alt="" />
@@ -74,7 +74,7 @@ function Article({
             />
           )}
         </ArticleActionButonsContainer>
-      )}
+      ) : null}
       <SharedActor>
         <a>
           <img

@@ -32,16 +32,18 @@ function ProfilePages() {
         <Background src={"/images/background.jpg"} />
         <Image src={user.photoURL} alt="profile photo" />
       </ImagesContainer>
-      <Header>{user.name}</Header>
-      <Description>{user.email}</Description>
-      <ButtonContainer>
-        <ActionButton onClick={() => console.log(user.photoURL)}>
-          Open to
-        </ActionButton>
-        <ActionButton>Add Profile Section</ActionButton>
-        <ActionButton>Enhance Profile</ActionButton>
-        <ActionButton>More</ActionButton>
-      </ButtonContainer>
+      <div style={{padding: '16px'}}>
+        <Header>{user.name}</Header>
+        <Description>{user.email}</Description>
+        <ButtonContainer>
+          <ActionButton onClick={() => console.log(user.photoURL)}>
+            Open to
+          </ActionButton>
+          <ActionButton>Add Profile Section</ActionButton>
+          <ActionButton>Enhance Profile</ActionButton>
+          <ActionButton>More</ActionButton>
+        </ButtonContainer>
+      </div>
     </Container>
   );
 }
@@ -50,6 +52,9 @@ const Container = styled.div`
   margin-top: 70px;
   max-width: 804px;
   margin-inline: auto;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15), 0 0 0 rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
 `;
 
 const ImagesContainer = styled.div`
@@ -59,7 +64,7 @@ const ImagesContainer = styled.div`
 
 const Background = styled.img`
   max-width: 804px;
-  border-radius-top: 5px;
+  border-radius: 5px;
 `;
 
 const Image = styled.img`
@@ -93,7 +98,7 @@ const Description = styled.p`
 const ButtonContainer = styled.div`
   display: flex;
   gap: 1rem;
-  padding: 12px;
+  padding-block: 12px;
 `;
 
 const ActionButton = styled.button`
@@ -101,22 +106,26 @@ const ActionButton = styled.button`
   height: 20px;
   border-radius: 15px;
   border: none;
-  background-color: rgba(0, 0, 0, 0.08);
+  background-color: white;
+  border: 1px solid #0a66c2;
   cursor: pointer;
-  padding-inline : 6px;
-  padding-block : 16px;
+  padding-inline: 30px;
+  padding-block: 16px;
   align-items: center;
+  justify-content: center;
   display: flex;
   font-size: 13px;
+  font-weight: 600;
+  color: #468bd1;
   &:first-child {
     color: white;
     background-color: #0a66c2;
-    width: 60px;
     height: 20px;
   }
 
   &:last-child {
-    background-color: blue;
+    color: black;
+    border: 1px solid black;
   }
 `;
 
