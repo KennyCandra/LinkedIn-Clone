@@ -6,7 +6,7 @@ import ReactPlayer from "react-player";
 import Comments from "./Comments";
 import { handleDelete } from "../Redux/actions";
 import { connect } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 function Article({
   article,
@@ -20,18 +20,24 @@ function Article({
   addLike,
 }) {
   const commentFocusFunctions = useRef({});
-  const [postDescription, setPostDescription] = useState("");
+  const [postDescription, setPostDescription] = useState(article.description);
   const navigate = useNavigate();
+  const location = useLocation();
+  const [showArticle, setShowArticle] = useState(false);
+
+  // useEffect(() => {
+  //   if (location.pathname === `/posts/${article.id}`) {
+  //     setShowArticle(true);
+  //   }
+  // });
 
   const navigateToProfile = (uid) => {
     navigate(`/profile/${uid}`);
   };
 
-  useEffect(() => {
-    if (article.description !== postDescription) {
-      setPostDescription(article.description);
-    }
-  }, []);
+useEffect(() => {
+  setPostDescription(article.description);
+}, []);
 
   const handleRevertChange = () => {
     setPostDescription(article.description);
@@ -45,36 +51,40 @@ function Article({
 
   return (
     <ArticleContainer>
-      {user.displayName === article.actor.title && (
-        <ArticleActionButtons onClick={() => toggleActionButton(article.id)}>
+      {articleActionButton ? user.displayName === article.actor.title && (
+        <ArticleActionButtons onClick={() => setShowArticle(!showArticle)}>
           <img src="images/three-dots-svgrepo-com.svg" />
         </ArticleActionButtons>
-      )}
-      {articleActionButton ? articleActionButton[article.id] && (
-        <ArticleActionButonsContainer>
-          <ActionButton onClick={() => handleDelete(article)}>
-            <img src="images/close-icon.svg" alt="" />
-            Delete Post
-          </ActionButton>
-          <ActionButton onClick={() => setShowEditModal(!showEditModal)}>
-            <img src="images/edit.svg" alt="" />
-            Edit Post
-          </ActionButton>
-
-          {showEditModal && (
-            <EditPostModal
-              showEditModal={showEditModal}
-              setShowEditModal={setShowEditModal}
-              handleEditPostModalClick={handleEditPostModalClick}
-              user={user}
-              article={article}
-              postDescription={postDescription}
-              setPostDescription={setPostDescription}
-              handleRevertChange={handleRevertChange}
-            />
-          )}
-        </ArticleActionButonsContainer>
       ) : null}
+      {articleActionButton
+        ? showArticle && (
+            <ArticleActionButonsContainer>
+              <ActionButton onClick={() => handleDelete(article)}>
+                <img src="images/close-icon.svg" alt="" />
+                Delete Post
+              </ActionButton>
+              <ActionButton onClick={() => setShowEditModal(!showEditModal)}>
+                <img src="images/edit.svg" alt="" />
+                Edit Post
+              </ActionButton>
+
+              {showEditModal && (
+                <EditPostModal
+                  showEditModal={showEditModal}
+                  setShowEditModal={setShowEditModal}
+                  handleEditPostModalClick={handleEditPostModalClick}
+                  user={user}
+                  article={article}
+                  postDescription={postDescription}
+                  setPostDescription={setPostDescription}
+                  handleRevertChange={handleRevertChange}
+                  showArticle={showArticle}
+                  setShowArticle={setShowArticle}
+                />
+              )}
+            </ArticleActionButonsContainer>
+          )
+        : null}
       <SharedActor>
         <a>
           <img
@@ -93,7 +103,9 @@ function Article({
             >
               {article.actor.title}
             </a>
-            <span style={{ marginTop: "10px" }} onClick={() => navigate(`/posts/${article.id}`)}>
+            <span
+              style={{ marginTop: "10px" }}
+            >
               {article.actor.date.toDate().toLocaleDateString()}
             </span>
           </div>

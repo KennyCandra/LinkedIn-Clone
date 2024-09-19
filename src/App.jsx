@@ -40,25 +40,25 @@ function App(props) {
               </>
             }
           />
+          <Route
+            path="/profile/:id"
+            element={
+              <>
+                <Header />
+                <ProfilePages />
+              </>
+            }
+          />
+          <Route
+            path="/posts/:id"
+            element={
+              <>
+                <Header />
+                <PostsPage />
+              </>
+            }
+          />
         </Route>
-        <Route
-          path="/profile/:id"
-          element={
-            <>
-              <Header />
-              <ProfilePages />
-            </>
-          }
-        />
-        <Route
-          path="/posts/:id"
-          element={
-            <>
-              <Header />
-              <PostsPage />
-            </>
-          }
-        />
       </Routes>
     </Router>
   );

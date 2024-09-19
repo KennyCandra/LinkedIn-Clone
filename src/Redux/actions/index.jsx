@@ -243,7 +243,7 @@ export const editArticleAPI = (payload, newPost) => {
       await updateDoc(docToUpdate.ref, {
         description: newPost,
       });
-      dispatch(actions.editArticle(payload));
+      dispatch(actions.editArticle(payload , newPost));
     } catch (error) {
       console.error(error);
     }

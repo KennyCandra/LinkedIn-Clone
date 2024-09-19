@@ -68,7 +68,7 @@ const mapDispatchToProps = (dispatch) => {
 const connectedApp = connect(mapStateToProps, mapDispatchToProps)(PostsPage);
 
 const Container = styled.div`
-  max-width: 555px;
+  max-width: 1024px;
   margin-top: 72px;
   margin-inline: auto;
 `;

@@ -12,6 +12,7 @@ function EditPostModal({
   postDescription,
   setPostDescription,
   handleRevertChange,
+  setShowArticle
 }) {
   const [textArea, setTextArea] = useState(postDescription);
   const [assetArea, setAssetArea] = useState("");
@@ -28,6 +29,7 @@ function EditPostModal({
       await setPostDescription(textArea);
       await editArticleAPI(article, textArea);
       setShowEditModal(false);
+      setShowArticle(false);
     } catch (error) {
       console.error(error);
     }
@@ -54,7 +56,7 @@ function EditPostModal({
         <Content>
           <Header>
             <h2>Edit Your Post</h2>
-            <button onClick={() => setShowEditModal(false)}>
+            <button onClick={() => {setShowEditModal(false); setShowArticle(false)}}>
               <img
                 style={{ zIndex: "100" }}
                 src="/images/close-icon.svg"

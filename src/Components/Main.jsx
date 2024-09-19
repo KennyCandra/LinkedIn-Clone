@@ -86,9 +86,9 @@ function Main(props) {
         <Content>
           {props.loading && <img src="/images/loader.svg" />}
           {props.articles.length > 0 &&
-            props.articles.map((article, index) => (
+            props.articles.map((article) => (
               <Article
-                key={index}
+                key={article.id}
                 article={article}
                 user={props.user}
                 toggleActionButton={toggleActionButton}

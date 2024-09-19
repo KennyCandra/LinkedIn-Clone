@@ -8,7 +8,12 @@ import {
 } from "../Redux/actions";
 import { useNavigate } from "react-router-dom";
 
-function Notifications({getNotificationsAPI, user, notifications, updateNotificationState}) {
+function Notifications({
+  getNotificationsAPI,
+  user,
+  notifications,
+  updateNotificationState,
+}) {
   const [button, setButton] = useState("all");
   const [className, setClassName] = useState("active");
   const navigate = useNavigate();
@@ -61,8 +66,10 @@ function Notifications({getNotificationsAPI, user, notifications, updateNotifica
         >
           My Posts
         </button>
-        <button className={className === "mention" ? "active" : null}
-        onClick={() => handleClick("mention")}>
+        <button
+          className={className === "mention" ? "active" : null}
+          onClick={() => handleClick("mention")}
+        >
           Mention
         </button>
       </ButtonsContainer>
@@ -72,7 +79,10 @@ function Notifications({getNotificationsAPI, user, notifications, updateNotifica
             <h1>No Notifications</h1>
           ) : (
             notificationArr.map((notification) => (
-              <NotificationsDiv onClick={() => navigate(`/posts/${notification.articleId}`)} key={notification.id}>
+              <NotificationsDiv
+                onClick={() => navigate(`/posts/${notification.articleId}`)}
+                key={notification.id}
+              >
                 <NotificationImage
                   src={notification.Image}
                   alt={notification.name}
@@ -82,10 +92,14 @@ function Notifications({getNotificationsAPI, user, notifications, updateNotifica
                     {notification.name}
                   </NotificationUserName>
                   <NotificationAction>
-                    {notification.action === "comment" ? 'commented on your post : ' : 'React on your post'}
+                    {notification.action === "comment"
+                      ? "commented on your post : "
+                      : "React on your post"}
                   </NotificationAction>
                   <NotificationText>
-                  {notification.action === 'comment' ? notification.description : null}
+                    {notification.action === "comment"
+                      ? notification.description
+                      : null}
                   </NotificationText>
                 </NotificationInfo>
               </NotificationsDiv>
@@ -182,6 +196,11 @@ const NotificationAction = styled.p`
   display: inline-block;
   font-weight: 400;
   font-size: 13px;
+  transition: all 200ms ease-in-out;
+  &:hover {
+    text-decoration: underline;
+    cursor: pointer;
+  }
 `;
 
 const NotificationText = styled(NotificationAction)``;
