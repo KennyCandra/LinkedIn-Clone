@@ -10,24 +10,14 @@ import {
   getNotificationsAPI,
 } from "../Redux/actions";
 import Article from "./Article";
-import { Link, useNavigate } from "react-router-dom";
 
 function Main(props) {
   const [show, setShow] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [articleActionButton, setArticleActionButton] = useState({});
-  const navigate = useNavigate();
 
   useEffect(() => {
     props.getNotificationsAPI(props.user.uid);
   }, []);
-
-  const toggleActionButton = (articleId) => {
-    setArticleActionButton((prev) => ({
-      ...prev,
-      [articleId]: !prev[articleId],
-    }));
-  };
 
   const handleClick = () => {
     setShow(!show);
@@ -91,8 +81,6 @@ function Main(props) {
                 key={article.id}
                 article={article}
                 user={props.user}
-                toggleActionButton={toggleActionButton}
-                articleActionButton={articleActionButton}
                 showEditModal={showEditModal}
                 setShowEditModal={setShowEditModal}
                 handleEditPostModalClick={handleEditPostModalClick}

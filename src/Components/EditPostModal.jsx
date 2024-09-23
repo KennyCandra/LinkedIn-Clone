@@ -51,7 +51,7 @@ function EditPostModal({
   };
 
   return (
-    { showEditModal } && (
+    {showEditModal } && (
       <Container>
         <Content>
           <Header>

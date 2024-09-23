@@ -6,7 +6,7 @@ import styled from "styled-components";
 
 function ProfilePages() {
   const { id } = useParams();
-  const [user, setUser] = useState([]);
+  const [user, setUser] = useState(undefined);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -16,15 +16,16 @@ function ProfilePages() {
       const q = query(userRef, where("uid", "==", id));
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         setUser(querySnapshot.docs[0].data());
-        setLoading(false);
       });
+      setLoading(false);
       return () => unsubscribe();
     } catch (error) {
       console.error("Error fetching user: ", error);
     }
   }, []);
 
-  if (loading) return <Container>Loading...</Container>;
+  if (loading) return <LoaderContainer><LoaderImage src="/images/loader.svg" /></LoaderContainer>;
+  if (user === undefined) return <Container><NotFoundImage src="/images/404-status-code.png" /></Container>;
 
   return (
     <Container>
@@ -55,6 +56,23 @@ const Container = styled.div`
   background-color: #ffffff;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15), 0 0 0 rgba(0, 0, 0, 0.2);
   border-radius: 5px;
+`;
+
+const NotFoundImage = styled.img`
+  width: 100%;
+`;
+
+const LoaderContainer = styled.div`
+margin-top: 70px;
+  max-width: 804px;
+  width: 100%;
+  height 100vh;
+  margin-inline: auto;
+  user-select: none;
+`
+
+const LoaderImage = styled.img`
+  width: 100%;
 `;
 
 const ImagesContainer = styled.div`

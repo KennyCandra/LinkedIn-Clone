@@ -11,8 +11,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 function Article({
   article,
   user,
-  toggleActionButton,
-  articleActionButton,
   handleDelete,
   showEditModal,
   setShowEditModal,
@@ -21,15 +19,10 @@ function Article({
 }) {
   const commentFocusFunctions = useRef({});
   const [postDescription, setPostDescription] = useState(article.description);
+  const location = useLocation;
   const navigate = useNavigate();
-  const location = useLocation();
   const [showArticle, setShowArticle] = useState(false);
-
-  // useEffect(() => {
-  //   if (location.pathname === `/posts/${article.id}`) {
-  //     setShowArticle(true);
-  //   }
-  // });
+  const btnRef = useRef(null);
 
   const navigateToProfile = (uid) => {
     navigate(`/profile/${uid}`);
@@ -43,28 +36,47 @@ useEffect(() => {
     setPostDescription(article.description);
   };
 
+  useEffect(() => {
+    const handleClickOutSide = (event) => {
+      if(btnRef.current && !btnRef.current.contains(event.target)) {
+        setShowArticle(false);
+      }
+    }
+
+    document.addEventListener('click', handleClickOutSide)
+    return () => {
+      document.removeEventListener('click', handleClickOutSide)
+    }
+  })
+
   const handleCommentClick = (articleId) => {
     if (commentFocusFunctions.current[articleId]) {
       commentFocusFunctions.current[articleId]();
     }
   };
 
+  const handleDeleteClick = () => {
+    handleDelete(article);
+    if (location.pathname === `/posts/${article.id}`) {
+      navigate("/");
+    }
+  };
+
   return (
     <ArticleContainer>
-      {articleActionButton ? user.displayName === article.actor.title && (
-        <ArticleActionButtons onClick={() => setShowArticle(!showArticle)}>
-          <img src="images/three-dots-svgrepo-com.svg" />
+      {user.displayName === article.actor.title && (
+        <ArticleActionButtons ref={btnRef} onClick={() => setShowArticle(!showArticle)}>
+          <img src="/images/three-dots-svgrepo-com.svg" />
         </ArticleActionButtons>
-      ) : null}
-      {articleActionButton
-        ? showArticle && (
+      )}
+      {showArticle && (
             <ArticleActionButonsContainer>
-              <ActionButton onClick={() => handleDelete(article)}>
-                <img src="images/close-icon.svg" alt="" />
+              <ActionButton onClick={handleDeleteClick}>
+                <img src="/public/images/close-icon.svg" alt="" />
                 Delete Post
               </ActionButton>
               <ActionButton onClick={() => setShowEditModal(!showEditModal)}>
-                <img src="images/edit.svg" alt="" />
+                <img src="/images/edit.svg" alt="" />
                 Edit Post
               </ActionButton>
 
@@ -83,8 +95,7 @@ useEffect(() => {
                 />
               )}
             </ArticleActionButonsContainer>
-          )
-        : null}
+          )}
       <SharedActor>
         <a>
           <img

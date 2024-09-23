@@ -105,7 +105,7 @@ function LikeButton({ article, user, addLike }) {
         onMouseLeave={handleMouseDown}
         onMouseEnter={handleMouseEnter}
       >
-        <button
+        <div
           style={{ background: "none" }}
           disabled={disableLikeButton}
           onClick={
@@ -127,7 +127,7 @@ function LikeButton({ article, user, addLike }) {
           >
             {websiteTypeLike === "none" ? "Like" : websiteTypeLike}
           </span>
-        </button>
+        </div>
         {isMenuVisible && (
           <LikeTypesContainer>
             {likeTypesArray.map((likeType, i) => (

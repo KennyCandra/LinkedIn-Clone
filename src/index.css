@@ -53,6 +53,10 @@ body {
     }
   }
 
+  * {
+   user-select: none;
+  }
+
 
   @keyframes appear {
     from {

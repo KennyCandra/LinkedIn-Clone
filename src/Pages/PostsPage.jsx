@@ -36,6 +36,7 @@ function PostsPage(props) {
   }, [id]);
 
   if (loading) return <div>Loading...</div>;
+  if (!article) return <div><img src="/images/404-status-code.pngs" /></div>;
 
   return (
     <>
